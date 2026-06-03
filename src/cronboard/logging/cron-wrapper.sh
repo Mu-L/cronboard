@@ -2,11 +2,12 @@
 
 set -o pipefail
 
-LOG_DIR="${CRONBOARD_LOG_DIR:-$HOME/.config/cronboard/logs}"
+JOB_NAME="${1:-unknown_job}"
+
+LOG_DIR="${CRONBOARD_LOG_DIR:-$HOME/.config/cronboard/logs/${JOB_NAME}}"
 mkdir -p "$LOG_DIR"
 
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-JOB_NAME="${1:-unknown_job}"
 shift
 
 LOG_FILE="$LOG_DIR/${JOB_NAME}_${TIMESTAMP}.log"
