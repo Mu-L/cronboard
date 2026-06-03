@@ -50,37 +50,7 @@ If you install Cronboard with `pip` or `uv`, you also need Python 3.13 or newer.
 
 ## 📦 Installation
 
-### Manual installation
-
-```bash
-git clone https://github.com/antoniorodr/cronboard
-cd cronboard
-pip install .
-```
-
-### Homebrew installation
-
-```bash
-brew install cronboard
-```
-
-### Installation with [uv](https://docs.astral.sh/uv/)
-
-```bash
-uv tool install git+https://github.com/antoniorodr/cronboard
-```
-
-### AUR installation
-
-```bash
-yay -S cronboard
-```
-
-### Nix installation
-
-```bash
-nix profile add github:antoniorodr/cronboard
-```
+For installation instructions, please refer to the [official documentation](https://cronboard.dev/installation).
 
 ## 🚀 Getting Started
 
