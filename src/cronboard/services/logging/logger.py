@@ -4,6 +4,7 @@ from pathlib import Path
 import posixpath
 from cronboard.services.logging.cron_wrapper import get_remote_home
 from cronboard.config import LOG_DIR, LOG_REL_PATH
+import shutil
 
 
 def get_log_files(identificator: str, ssh: paramiko.SSHClient | None = None):
@@ -75,5 +76,10 @@ def delete_logs_for_identificator(
         path = LOG_DIR / identificator
         shutil.rmtree(path, ignore_errors=True)
     else:
-        quoted = " ".join(shlex.quote(p) for p in paths)
-        ssh.exec_command(f"rm -f -- {quoted}")
+        home = get_remote_home(ssh)
+
+        if not home:
+            return
+
+        path = posixpath.join(home, LOG_REL_PATH, identificator)
+        ssh.exec_command(f"rm -rf -- {shlex.quote(path)}")
