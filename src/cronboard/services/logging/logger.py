@@ -8,7 +8,7 @@ from cronboard.config import LOG_DIR, LOG_REL_PATH
 
 def get_log_files(identificator: str, ssh: paramiko.SSHClient | None = None):
     if ssh is None:
-        log_dir = LOG_DIR
+        log_dir = LOG_DIR / identificator
         if not log_dir.exists():
             return {}
         return {
@@ -21,7 +21,7 @@ def get_log_files(identificator: str, ssh: paramiko.SSHClient | None = None):
         home = get_remote_home(ssh)
         if not home:
             return {}
-        log_dir = posixpath.join(home, LOG_REL_PATH)
+        log_dir = posixpath.join(home, LOG_REL_PATH, identificator)
 
         cmd = f"ls {log_dir} 2>/dev/null"
         _, stdout, stderr = ssh.exec_command(cmd)
@@ -72,8 +72,8 @@ def delete_logs_for_identificator(
     if not paths:
         return
     if ssh is None:
-        for path_str in paths:
-            Path(path_str).unlink(missing_ok=True)
+        path = LOG_DIR / identificator
+        shutil.rmtree(path, ignore_errors=True)
     else:
         quoted = " ".join(shlex.quote(p) for p in paths)
         ssh.exec_command(f"rm -f -- {quoted}")
