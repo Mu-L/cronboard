@@ -69,9 +69,6 @@ def delete_logs_for_identificator(
     identificator: str, ssh: paramiko.SSHClient | None = None
 ) -> None:
     """Remove all log files for ``identificator`` (same selection as :func:`get_log_files`)."""
-    paths = list(get_log_files(identificator, ssh).values())
-    if not paths:
-        return
     if ssh is None:
         path = LOG_DIR / identificator
         shutil.rmtree(path, ignore_errors=True)
