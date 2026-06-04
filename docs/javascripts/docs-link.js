@@ -14,4 +14,17 @@ document$.subscribe(function() {
       headerInner.appendChild(link);
     }
   }
+  if (headerInner && !document.querySelector('.md-header__donate-link')) {
+    var donateLink = document.createElement('a');
+    donateLink.href = 'https://github.com/sponsors/antoniorodr';
+    donateLink.target = '_blank';
+    donateLink.className = 'md-header__donate-link';
+    donateLink.innerHTML = '<svg width="16" height="16" fill="currentColor"><use href="images/sprites.svg#icon-heart"/></svg><span>Donate</span>';
+    var docsLink = headerInner.querySelector('.md-header__docs-link');
+    if (docsLink) {
+      headerInner.insertBefore(donateLink, docsLink.nextSibling);
+    } else {
+      headerInner.appendChild(donateLink);
+    }
+  }
 });

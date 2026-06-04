@@ -140,6 +140,31 @@
   color: var(--md-primary-fg-color);
 }
 
+.md-header__donate-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--md-primary-fg-color);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.3rem;
+  border: 1px solid var(--md-primary-fg-color);
+  transition: all 0.2s;
+  margin-left: 0.5rem;
+}
+
+.md-header__donate-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+.md-header__donate-link:hover {
+  background: var(--md-primary-fg-color);
+  color: var(--md-primary-bg-color);
+}
+
 /* Logo in header */
 .md-logo__ascii {
   margin: 0;
