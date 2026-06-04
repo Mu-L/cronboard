@@ -9,7 +9,7 @@ from cronboard.services.logging.logger import (
     read_log_file,
 )
 
-from .conftest import ssh_mock_exec_return, ssh_mock_exec_sequence
+from tests.conftest import ssh_mock_exec_return, ssh_mock_exec_sequence
 
 _LOGGER = "cronboard.services.logging.logger"
 _FAKE_HOME = Path("/fake/home")
@@ -24,6 +24,7 @@ def _patch_local_log_discovery(
     mock_log_dir = mocker.Mock()
     mock_log_dir.exists.return_value = dir_exists
     mock_log_dir.glob.return_value = glob_paths or []
+    mock_log_dir.__truediv__ = mocker.Mock(return_value=mock_log_dir)
     mocker.patch(f"{_LOGGER}.LOG_DIR", mock_log_dir)
 
 
@@ -87,8 +88,8 @@ app2_c.log
 random.txt
 """,
             {
-                "app1_a": "/home/test/.config/cronboard/logs/app1_a.log",
-                "app1_b": "/home/test/.config/cronboard/logs/app1_b.log",
+                "app1_a": "/home/test/.config/cronboard/logs/app1/app1_a.log",
+                "app1_b": "/home/test/.config/cronboard/logs/app1/app1_b.log",
             },
         ),
         (
@@ -184,11 +185,13 @@ def test_delete_logs_for_identificator_local_removes_matching_files(
     mocker: MockerFixture, tmp_path: Path
 ):
     log_dir = tmp_path / ".config/cronboard/logs"
+    job_dir = log_dir / "job1"
     log_dir.mkdir(parents=True)
+    job_dir.mkdir()
     mocker.patch(f"{_LOGGER}.LOG_DIR", log_dir)
     keep = log_dir / "other_job_a.log"
-    remove1 = log_dir / "job1_a.log"
-    remove2 = log_dir / "job1_b.log"
+    remove1 = job_dir / "job1_a.log"
+    remove2 = job_dir / "job1_b.log"
     for p in (keep, remove1, remove2):
         p.write_text("x", encoding="utf-8")
 
@@ -215,15 +218,13 @@ def test_delete_logs_for_identificator_remote_runs_rm(
         mocker,
         [
             (b"/home/test\n", b""),
-            (b"app1_a.log\napp1_b.log\n", b""),
             (b"", b""),
         ],
     )
 
     delete_logs_for_identificator("app1", ssh=ssh)
 
-    assert ssh.exec_command.call_count == 3
-    rm_cmd = ssh.exec_command.call_args_list[2][0][0]
-    assert rm_cmd.startswith("rm -f -- ")
-    assert "/home/test/.config/cronboard/logs/app1_a.log" in rm_cmd
-    assert "/home/test/.config/cronboard/logs/app1_b.log" in rm_cmd
+    assert ssh.exec_command.call_count == 2
+    rm_cmd = ssh.exec_command.call_args_list[1][0][0]
+    assert rm_cmd.startswith("rm -rf -- ")
+    assert "/home/test/.config/cronboard/logs/app1" in rm_cmd

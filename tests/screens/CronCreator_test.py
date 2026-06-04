@@ -1,6 +1,6 @@
 import pytest
 from pytest_mock import MockerFixture
-from .conftest import make_creator
+from tests.conftest import make_creator
 from cronboard.screens.CronCreator import CronCreator
 from cronboard.app import CronBoard
 from cronboard.screens.CronCreator import CronAutoComplete

@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture
 
 import cronboard.services.logging.cron_wrapper as mod
 
-from .conftest import (
+from tests.conftest import (
     home_dir_under_tmp,
     patch_config_dir,
     ssh_mock_exec_raises,
@@ -333,4 +333,3 @@ def test_command_without_wrapper_extra_spaces(mock_bash):
     res = mod.command_without_wrapper(cmd)
 
     assert res == "echo hello"
-
