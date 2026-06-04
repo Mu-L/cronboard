@@ -5,15 +5,65 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.6.2] - 27.05.2026
+## [0.7.0] - 04.06.2026
+
+### Added
+- Add miniwi font by @antoniorodr
+- Add toast when text is copied by @antoniorodr
+- Add link to Textual by @antoniorodr
 
 ### Changed
-- Create ascii title
-- Update version
-- Merge branch 'feat/log-crono-order' into release/v0.6.2
-- Order logs chronologically
-- Update update flake workflow
-- Update release workflow
+- Update `uv.lock`
+- Change order of the links
+- Create donation button for the header
+- Refactor `tests/` folder with better structure
+- Update `pyproject.toml` version
+- Change docstring
+- Merge branch 'feat/logs-own-folder' into release/v0.7.0
+- Change the `log_dir` path to the new one with identificator
+- Change the `LOG_DIR` to use the `JOB_NAME` on the path
+- Update readme with link to the documentation by @antoniorodr
+- Change `Shortcuts` with `Keybinds` by @antoniorodr
+- Change word `shortcuts` for `keybinds` by @antoniorodr
+- Update `zensical.toml` by @antoniorodr
+- Update website by @antoniorodr
+- Update `zensical.toml` by @antoniorodr
+- Create new `index.md` as the home of the page by @antoniorodr
+- Create `home.html` to override the default one by @antoniorodr
+- Create .css to override the default themes by @antoniorodr
+- Create JS files for the install section and docs link by @antoniorodr
+- Move sprites to `sprites.svg` and change interface gif by @antoniorodr
+- Update `README.md` demo by @antoniorodr
+- Update flake workflow by @antoniorodr
+
+### Fixed
+- Fix bug with installation section on mobile by @antoniorodr
+- Fix logo display with custom font by @antoniorodr
+- Fix style and size by @antoniorodr
+- Fix ascii display problem by @antoniorodr
+- Update favicon by @antoniorodr
+- Fix showing wrong title on home by @antoniorodr
+- Fix favicon showing zensical default by @antoniorodr
+- Fix a bug where the hamburger menu was empty by @antoniorodr
+- Fix toast color text in light mode by @antoniorodr
+
+### Removed
+- Delete `paths` variable
+- Delete on ssh using the new logs path
+
+## [0.6.2] - 27.05.2026
+
+### Added
+- Add write permissions to update-flake-lock job by @antoniorodr
+
+### Changed
+- Update `CHANGELOG.md` by @antoniorodr
+- Create ascii title by @antoniorodr
+- Update version by @antoniorodr
+- Merge branch 'feat/log-crono-order' into release/v0.6.2 by @antoniorodr
+- Order logs chronologically by @antoniorodr
+- Update update flake workflow by @antoniorodr
+- Update release workflow by @antoniorodr
 - Update `CHANGELOG.md` by @antoniorodr
 
 ## [0.6.1] - 26.05.2026
@@ -427,6 +477,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### New Contributors
 * @antoniorodr made their first contribution
 
+[0.7.0]: https://github.com/antoniorodr/cronboard/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/antoniorodr/cronboard/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/antoniorodr/cronboard/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/antoniorodr/cronboard/compare/v0.5.4...v0.6.0
