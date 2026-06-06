@@ -450,7 +450,9 @@
 
 .term-cmd-text {
   flex: 1;
-  white-space: pre;
+  white-space: normal;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .term-copy {
