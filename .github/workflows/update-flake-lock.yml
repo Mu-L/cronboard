@@ -28,3 +28,5 @@ jobs:
         with:
           commit_message: "chore: update flake.lock"
           file_pattern: flake.lock
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
