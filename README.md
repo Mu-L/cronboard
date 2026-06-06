@@ -43,7 +43,7 @@ The project is built with:
 Before starting, make sure `cron` is installed and available on your machine:
 
 ```bash
-crontab -l
+where crontab
 ```
 
 If you install Cronboard with `pip` or `uv`, you also need Python 3.13 or newer.
