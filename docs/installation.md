@@ -22,7 +22,7 @@ brew install cronboard
 
 ## uv
 
-Good choice if you already use [uv](https://github.com/astral-sh/uv) for Python tooling. Installs the latest version from [PyPI](https://pypi.org/project/cronboard/).
+Good choice if you already use [uv](https://github.com/astral-sh/uv) for Python tooling. Installs the latest version from [PyPI](https://pypi.org/project/cronboard/). You can update the install with `uv tool update cronboard` when new versions are released.
 
 ```bash
 uv tool install cronboard
