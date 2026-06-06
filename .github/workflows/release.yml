@@ -43,7 +43,6 @@ jobs:
           OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
   release:
-    if: startsWith(github.ref, 'refs/tags/')
     needs: [changelog, build]
     runs-on: ubuntu-latest
     permissions:
@@ -64,7 +63,6 @@ jobs:
           artifactErrorsFailBuild: true
           makeLatest: true
   update-flake-lock:
-    if: startsWith(github.ref, 'refs/tags/')
     needs: release
     uses: ./.github/workflows/update-flake-lock.yml
     permissions:
