@@ -3,7 +3,7 @@
 Before installing Cronboard, make sure `cron` is available on your machine:
 
 ```bash
-crontab -l
+where crontab
 ```
 
 If this command returns an error saying `cron` is not installed, install it through your system's package manager first. Cronboard only manages existing crontabs; it does not replace the system cron daemon.
