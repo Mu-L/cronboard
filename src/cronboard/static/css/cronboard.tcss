@@ -143,7 +143,7 @@ LogViewModal #dialog {
     align: center middle;
     width: 100%;
     height: auto;
-    padding: 1 2;
+    padding: 1 2 0 2;
 }
 
 #content Label {
@@ -196,7 +196,7 @@ LogViewModal #dialog {
     align: center middle;
     width: 100%;
     height: auto;
-    margin-top: 2;
+    margin-top: 1;
 }
 
 #button-row Button {
