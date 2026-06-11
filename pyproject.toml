@@ -49,4 +49,4 @@ dev = [
 ]
 
 [tool.setuptools.package-data]
-"cronboard" = ["static/css/*.tcss"]
+"cronboard" = ["static/css/*.tcss", "logging/*.sh"]
