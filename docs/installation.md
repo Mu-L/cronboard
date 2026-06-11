@@ -40,16 +40,6 @@ yay -S cronboard
 
 ---
 
-## Nix
-
-For Nix/NixOS users. Adds Cronboard to your profile from the project’s flake.
-
-```bash
-nix profile add github:antoniorodr/cronboard
-```
-
----
-
 ## Manual (from source)
 
 Use this if you want to run from a clone (e.g. for development or a specific branch). Requires Python 3.13+ and the project’s dependencies.
