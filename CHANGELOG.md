@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 11.06.2026
+
+### Added
+- Add "terminal trove tool of the week" message by @antoniorodr
+
+### Changed
+- Update version
+- Create new file for `CronAutoComplete`
+- Merge branch 'include-missing-logging-scripts' into release/v0.7.1
+- Update interface overview gif by @antoniorodr
+- Update `UV` installation explanation by @antoniorodr
+- Update installation methods by @antoniorodr
+- Update cron installation check on the docs by @antoniorodr
+- Update cron installation check by @antoniorodr
+- Update `UV` installation method by @antoniorodr
+- Update release workflow by @antoniorodr
+- Update publish pypi workflow by @antoniorodr
+- Update release workflow by @antoniorodr
+- Create pypi workflow by @antoniorodr
+- Update `UV` installation method by @antoniorodr
+- Update installation methods by @antoniorodr
+- Update flake workflow by @antoniorodr
+- Update `CHANGELOG.md` by @antoniorodr
+
+### Fixed
+- Fix a bug where a not standard expression was parsed
+- Include missing logging scripts
+- Fix the size of the `CronCreator` screen
+
+### Removed
+- Delete unused exception variable
+- Delete uneccesary `if` statments by @antoniorodr
+
 ## [0.7.0] - 04.06.2026
 
 ### Added
@@ -13,15 +46,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add link to Textual by @antoniorodr
 
 ### Changed
-- Update `uv.lock`
-- Change order of the links
-- Create donation button for the header
-- Refactor `tests/` folder with better structure
-- Update `pyproject.toml` version
-- Change docstring
-- Merge branch 'feat/logs-own-folder' into release/v0.7.0
-- Change the `log_dir` path to the new one with identificator
-- Change the `LOG_DIR` to use the `JOB_NAME` on the path
+- Update `uv.lock` by @antoniorodr
+- Change order of the links by @antoniorodr
+- Create donation button for the header by @antoniorodr
+- Refactor `tests/` folder with better structure by @antoniorodr
+- Update `pyproject.toml` version by @antoniorodr
+- Change docstring by @antoniorodr
+- Merge branch 'feat/logs-own-folder' into release/v0.7.0 by @antoniorodr
+- Change the `log_dir` path to the new one with identificator by @antoniorodr
+- Change the `LOG_DIR` to use the `JOB_NAME` on the path by @antoniorodr
 - Update readme with link to the documentation by @antoniorodr
 - Change `Shortcuts` with `Keybinds` by @antoniorodr
 - Change word `shortcuts` for `keybinds` by @antoniorodr
@@ -48,8 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix toast color text in light mode by @antoniorodr
 
 ### Removed
-- Delete `paths` variable
-- Delete on ssh using the new logs path
+- Delete `paths` variable by @antoniorodr
+- Delete on ssh using the new logs path by @antoniorodr
 
 ## [0.6.2] - 27.05.2026
 
@@ -477,6 +510,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### New Contributors
 * @antoniorodr made their first contribution
 
+[0.7.1]: https://github.com/antoniorodr/cronboard/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/antoniorodr/cronboard/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/antoniorodr/cronboard/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/antoniorodr/cronboard/compare/v0.6.0...v0.6.1
