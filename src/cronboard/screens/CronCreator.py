@@ -379,7 +379,7 @@ class CronCreator(ModalScreen[bool]):
 
             self.dismiss(True)
 
-        except (ValueError, KeyError):
+        except (ValueError, KeyError) as e:
             self._show_error("Invalid cron expression. Please try again.")
 
     def expression_description(self, expr: str, label_desc: Label) -> None:
@@ -395,6 +395,9 @@ class CronCreator(ModalScreen[bool]):
                 label_desc.remove_class("error")
                 label_desc.add_class("success")
                 return
+
+            if len(expr.split()) > 5:
+                raise ValueError("Invalid cron expression")
 
             expr = CRON_ALIASES.get(expr, expr)
 
