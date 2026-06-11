@@ -3,6 +3,7 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 jobs:
   test:
     uses: ./.github/workflows/tests.yml
@@ -67,3 +68,4 @@ jobs:
     uses: ./.github/workflows/update-flake-lock.yml
     permissions:
       contents: write
+      pull-requests: write
