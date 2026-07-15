@@ -87,7 +87,8 @@ class CronCreator(ModalScreen[bool]):
                     id="identificator",
                 )
                 yield Label(
-                    "Tick if you want to enable logging", classes="form-label mt-2 pt-2"
+                    "Tick if you want to enable logging",
+                    classes="form-label mt-2 pt-2",
                 )
                 yield VimKeysRadioSet(
                     RadioButton("Enable logging", id="enable", value=self.log_enabled),
