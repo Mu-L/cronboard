@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from pytest_mock import MockerFixture
 
-from cronboard.services.logging.logger import (
+from cronboard.services.cron_logging.logger import (
     delete_logs_for_identificator,
     get_log_files,
     read_log_file,
@@ -11,7 +11,7 @@ from cronboard.services.logging.logger import (
 
 from tests.conftest import ssh_mock_exec_return, ssh_mock_exec_sequence
 
-_LOGGER = "cronboard.services.logging.logger"
+_LOGGER = "cronboard.services.cron_logging.logger"
 _FAKE_HOME = Path("/fake/home")
 
 

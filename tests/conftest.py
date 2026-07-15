@@ -10,7 +10,7 @@ from types import SimpleNamespace
 from cronboard.screens.CronSSHModal import CronSSHModal
 from collections.abc import AsyncIterator
 from textual.pilot import Pilot
-from cronboard.services.logging import cron_wrapper as mod
+from cronboard.services.cron_logging import cron_wrapper as mod
 
 
 @pytest.fixture

@@ -6,7 +6,7 @@ from pathlib import Path
 import paramiko
 from pytest_mock import MockerFixture
 
-import cronboard.services.logging.cron_wrapper as mod
+import cronboard.services.cron_logging.cron_wrapper as mod
 
 from tests.conftest import (
     home_dir_under_tmp,

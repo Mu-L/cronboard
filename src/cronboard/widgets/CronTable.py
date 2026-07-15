@@ -5,7 +5,7 @@ from textual.coordinate import Coordinate
 from datetime import datetime
 from rich.text import Text
 from cronboard.screens.CronInputSearch import CronInputSearch
-from cronboard.services.logging.cron_wrapper import (
+from cronboard.services.cron_logging.cron_wrapper import (
     has_wrapper,
     wrap_command,
     command_without_wrapper,
