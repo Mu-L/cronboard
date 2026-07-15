@@ -5,7 +5,7 @@ from textual.binding import Binding
 from textual.containers import Grid, Horizontal, Vertical
 from textual.screen import ModalScreen
 from cron_descriptor import Options, ExpressionDescriptor
-from cronboard.services.logging.cron_wrapper import (
+from cronboard.services.cron_logging.cron_wrapper import (
     has_wrapper,
     wrap_command,
     command_without_wrapper,
