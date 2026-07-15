@@ -77,7 +77,7 @@ class CronCreator(ModalScreen[bool]):
                     id="command",
                 )
                 yield command_input
-                yield CronAutoComplete(target=command_input)
+                yield CronAutoComplete(target=command_input, ssh_client=self.ssh_client)
                 yield Label(
                     "Enter an ID for the cron job", classes="form-label mt-2 pt-2"
                 )

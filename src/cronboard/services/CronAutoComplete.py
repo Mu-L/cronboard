@@ -9,15 +9,29 @@ from textual_autocomplete._path_autocomplete import (
 import os
 from pathlib import Path
 from textual.widgets import Input
+from cronboard.services.cron_logging.cron_wrapper import get_remote_home, get_files
+from cronboard.services.CronDirEntry import CronDirEntry
 
 
 class CronAutoComplete(PathAutoComplete):
+    def __init__(self, target, ssh_client=None):
+        super().__init__(target)
+        self.ssh_client = ssh_client
+        self.target_state = target
+        self.directory_cache: dict[str, list[CronDirEntry]] = {}
+
     def get_candidates(self, target_state: TargetState) -> list[DropdownItem]:
         """Get the candidates for the current path segment.
 
-        This is called each time the input changes or the cursor position changes/
+        This is called each time the input changes or the cursor position changes
         """
-        home_path = Path.home()
+        if self.ssh_client:
+            remote_home = get_remote_home(self.ssh_client)
+            if remote_home:
+                home_path = Path(remote_home)
+        else:
+            home_path = Path.home()
+
         current_input_full = target_state.text[: target_state.cursor_position]
         # Hide Autocomplete when entering new command section
         if current_input_full.endswith(" "):
@@ -34,17 +48,27 @@ class CronAutoComplete(PathAutoComplete):
 
         # Use the directory path as the cache key
         cache_key = str(directory)
-        cached_entries = self._directory_cache.get(cache_key)
+        cached_entries = self.directory_cache.get(cache_key)
 
         if cached_entries is not None:
             entries = cached_entries
         else:
             try:
-                entries = list(os.scandir(directory))
-                self._directory_cache[cache_key] = entries
+                if not self.ssh_client:
+                    objects = list(os.scandir(directory))
+                    entries: list[CronDirEntry] = []
+
+                    for object in objects:
+                        cron_dir_entry = CronDirEntry(
+                            object.name, object.path, object.is_dir()
+                        )
+                        entries.append(cron_dir_entry)
+                else:
+                    entries = get_files(self.ssh_client)
+
+                self.directory_cache[cache_key] = entries
             except OSError:
                 return []
-
         results: list[PathDropdownItem] = []
         for entry in entries:
             # Only include the entry name, not the full path

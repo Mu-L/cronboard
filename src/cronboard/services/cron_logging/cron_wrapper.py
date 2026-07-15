@@ -52,6 +52,30 @@ def get_remote_home(ssh: paramiko.SSHClient) -> Optional[str]:
         return None
 
 
+def get_files(ssh: paramiko.SSHClient, path=".") -> list[CronDirEntry]:
+    sftp: SFTPClient = ssh.open_sftp()
+    entries: list[CronDirEntry] = []
+
+    # NOTE: Typing is still not that quick
+    # FIXME: When completing one path, it goes back to `home` instead of suggests path inside the new path
+
+    try:
+        for object in sftp.listdir_attr(path):
+            if stat.S_ISDIR(object.st_mode):
+                cron_dir_entry = CronDirEntry(
+                    object.filename, path + object.filename, True
+                )
+                entries.append(cron_dir_entry)
+            else:
+                cron_file_entry = CronDirEntry(object.filename, path, False)
+                entries.append(cron_file_entry)
+        for entry in entries:
+            print(entry.path)
+        return entries
+    finally:
+        sftp.close()
+
+
 def is_wrapper_installed_local() -> bool:
     target_file = CONFIG_DIR / WRAPPER_DIST
 
