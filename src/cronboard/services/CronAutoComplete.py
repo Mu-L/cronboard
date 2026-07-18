@@ -19,6 +19,8 @@ class CronAutoComplete(PathAutoComplete):
         self.ssh_client = ssh_client
         self.target_state = target
         self.directory_cache: dict[str, list[CronDirEntry]] = {}
+        self._sftp = None
+        self._remote_home = None
 
     def get_candidates(self, target_state: TargetState) -> list[DropdownItem]:
         """Get the candidates for the current path segment.
@@ -26,9 +28,10 @@ class CronAutoComplete(PathAutoComplete):
         This is called each time the input changes or the cursor position changes
         """
         if self.ssh_client:
-            remote_home = get_remote_home(self.ssh_client)
-            if remote_home:
-                home_path = Path(remote_home)
+            if not self._remote_home:
+                self._remote_home = get_remote_home(self.ssh_client)
+            if self._remote_home:
+                home_path = Path(self._remote_home)
         else:
             home_path = Path.home()
 
