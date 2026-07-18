@@ -64,7 +64,7 @@ class CronAutoComplete(PathAutoComplete):
                         )
                         entries.append(cron_dir_entry)
                 else:
-                    entries = get_files(self.ssh_client)
+                    entries = get_files(self.ssh_client, str(directory))
 
                 self.directory_cache[cache_key] = entries
             except OSError:
