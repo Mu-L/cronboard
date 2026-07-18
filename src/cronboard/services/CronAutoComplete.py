@@ -69,7 +69,7 @@ class CronAutoComplete(PathAutoComplete):
                 self.directory_cache[cache_key] = entries
             except OSError:
                 return []
-        results: list[PathDropdownItem] = []
+        results: list[tuple[PathDropdownItem, bool]] = []
         for entry in entries:
             # Only include the entry name, not the full path
             completion = entry.name
@@ -77,17 +77,19 @@ class CronAutoComplete(PathAutoComplete):
                 continue
             if entry.is_dir():
                 completion += "/"
-            results.append(PathDropdownItem(completion, path=Path(entry.path)))
+            results.append(
+                (PathDropdownItem(completion, path=Path(entry.path)), entry.is_dir())
+            )
 
-        results.sort(key=self.sort_key)
+        results.sort(key=lambda x: self.sort_key(x[0]))
         folder_prefix = self.folder_prefix
         file_prefix = self.file_prefix
         return [
             DropdownItem(
                 item.main,
-                prefix=folder_prefix if item.path.is_dir() else file_prefix,
+                prefix=folder_prefix if is_dir else file_prefix,
             )
-            for item in results
+            for item, is_dir in results
         ]
 
     def get_search_string(self, target_state: TargetState) -> str:
