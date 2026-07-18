@@ -100,6 +100,11 @@ class CronAutoComplete(PathAutoComplete):
             for item, is_dir in results
         ]
 
+    def on_unmount(self):
+        if self._sftp:
+            self._sftp.close()
+            self._sftp = None
+
     def get_search_string(self, target_state: TargetState) -> str:
         """Return only the current path segment for searching in the dropdown."""
         current_input_full = target_state.text[: target_state.cursor_position].strip()
