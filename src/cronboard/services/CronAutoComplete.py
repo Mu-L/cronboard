@@ -1,3 +1,4 @@
+from os import DirEntry
 from textual_autocomplete import (
     DropdownItem,
     PathAutoComplete,
