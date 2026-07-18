@@ -54,7 +54,7 @@ def get_remote_home(ssh: paramiko.SSHClient) -> Optional[str]:
         return None
 
 
-def get_files(ssh: paramiko.SSHClient, path=".") -> list[CronDirEntry]:
+def get_files(ssh: paramiko.SSHClient, path: str) -> list[CronDirEntry]:
     sftp: SFTPClient = ssh.open_sftp()
     entries: list[CronDirEntry] = []
 
@@ -64,15 +64,11 @@ def get_files(ssh: paramiko.SSHClient, path=".") -> list[CronDirEntry]:
     try:
         for object in sftp.listdir_attr(path):
             if stat.S_ISDIR(object.st_mode):
-                cron_dir_entry = CronDirEntry(
-                    object.filename, path + object.filename, True
-                )
+                cron_dir_entry = CronDirEntry(object.filename, path, True)
                 entries.append(cron_dir_entry)
             else:
                 cron_file_entry = CronDirEntry(object.filename, path, False)
                 entries.append(cron_file_entry)
-        for entry in entries:
-            print(entry.path)
         return entries
     finally:
         sftp.close()
