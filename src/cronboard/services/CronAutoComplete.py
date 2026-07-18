@@ -58,7 +58,7 @@ class CronAutoComplete(PathAutoComplete):
         else:
             try:
                 if not self.ssh_client:
-                    objects = list(os.scandir(directory))
+                    objects: list[DirEntry[str]] = list(os.scandir(directory))
                     entries: list[CronDirEntry] = []
 
                     for object in objects:
@@ -67,7 +67,12 @@ class CronAutoComplete(PathAutoComplete):
                         )
                         entries.append(cron_dir_entry)
                 else:
-                    entries = get_files(self.ssh_client, str(directory))
+                    if not self._sftp:
+                        self._sftp = self.ssh_client.open_sftp()
+
+                    entries = get_files(
+                        self.ssh_client, str(directory), sftp=self._sftp
+                    )
 
                 self.directory_cache[cache_key] = entries
             except OSError:
