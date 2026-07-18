@@ -29,6 +29,7 @@ from cronboard.services.messages import CronJobDeleted
 from cronboard.services.cron_logging.logger import delete_logs_for_identificator
 from cronboard.screens.CronDeleteConfirmation import CronDeleteConfirmation
 from cronboard.screens.CronServers import CronServers
+from cronboard.themes.everforest_dark_hard import everforest_dark_hard
 
 
 def is_form_element(element):
@@ -82,6 +83,7 @@ class CronBoard(App):
         delete_logs_for_identificator(event.identificator, event.ssh_client)
 
     def on_mount(self) -> None:
+        self.register_theme(everforest_dark_hard)
         config = self.load_config()
         saved_theme = config.get("theme", "catppuccin-mocha")
         self.theme = saved_theme
