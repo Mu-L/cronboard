@@ -16,6 +16,8 @@ from textual.widgets import Input
 from cronboard.services.cron_logging.cron_wrapper import get_remote_home, get_files
 from cronboard.services.CronDirEntry import CronDirEntry
 
+# TODO: Fix typing responsiveness when in server
+
 
 class CronAutoComplete(PathAutoComplete):
     def __init__(self, target, ssh_client=None):

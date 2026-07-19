@@ -5,15 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.2] - 19.07.2026
+
+### Added
+- Add type annotations
+- Add import to be used on typing
+- Add `everforest_dark_hard` theme to the palette
+- Add debugpy as dev dependency
+
+### Changed
+- Update dependencies
+- `get_files` used the cached sftp for better performance
+- Create `on_unmount` to close sftp connection
+- Send the cached `sftp` to `get_files`
+- Create cache for `sftp` and `home_path`
+- Convert `results` to a list of tuples
+- `get_candidates` function sends dir when `get_files` called
+- `get_files` is now taking `path` as arg
+- Update imports
+- Create wrapper `CronDirEntry`
+- Change line split
+- Update import after name change
+- Update imports to use correct path
+- Change import to use correct path
+- Rename folder `logging` to `cron_logging`
+- Change linting
+- Flake gets the version dynamically from the `pyproject` file by @antoniorodr
+- Nix installation back to the docs by @antoniorodr
+- Workflow_dispatch by @antoniorodr
+- Update workflow to create a PR when updating the flake by @antoniorodr
+- Update `CHANGELOG.md` by @antoniorodr
+
+### Fixed
+- Fix autocompletion on servers (still slow/clunky responsiveness)
+
+### Removed
+- Delete workflow_dispatch options by @antoniorodr
+- Delete flake installation by @antoniorodr
+- Delete flake workflow by @antoniorodr
+
 ## [0.7.1] - 11.06.2026
 
 ### Added
 - Add "terminal trove tool of the week" message by @antoniorodr
 
 ### Changed
-- Update version
-- Create new file for `CronAutoComplete`
-- Merge branch 'include-missing-logging-scripts' into release/v0.7.1
+- Update version by @antoniorodr
+- Create new file for `CronAutoComplete` by @antoniorodr
+- Merge branch 'include-missing-logging-scripts' into release/v0.7.1 by @antoniorodr in [#57](https://github.com/antoniorodr/cronboard/pull/57)
 - Update interface overview gif by @antoniorodr
 - Update `UV` installation explanation by @antoniorodr
 - Update installation methods by @antoniorodr
@@ -30,13 +69,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update `CHANGELOG.md` by @antoniorodr
 
 ### Fixed
-- Fix a bug where a not standard expression was parsed
-- Include missing logging scripts
-- Fix the size of the `CronCreator` screen
+- Fix a bug where a not standard expression was parsed by @antoniorodr
+- Include missing logging scripts by @simon-suess
+- Fix the size of the `CronCreator` screen by @antoniorodr
 
 ### Removed
-- Delete unused exception variable
+- Delete unused exception variable by @antoniorodr
 - Delete uneccesary `if` statments by @antoniorodr
+
+### New Contributors
+* @simon-suess made their first contribution
 
 ## [0.7.0] - 04.06.2026
 
@@ -206,14 +248,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update release and tests workflows by @antoniorodr
 
 ### Fixed
-- Notify once when disconnecting server by @DragunovX16
+- Notify once when disconnecting server by @9876543210-tc-0123456789
 
 ### Removed
 - Delete project explanation file by @antoniorodr
-- Remove unreachable line by @DragunovX16
+- Remove unreachable line by @9876543210-tc-0123456789
 
 ### New Contributors
-* @DragunovX16 made their first contribution
+* @9876543210-tc-0123456789 made their first contribution
 
 ## [0.5.2] - 19.04.2026
 
@@ -510,6 +552,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### New Contributors
 * @antoniorodr made their first contribution
 
+[0.7.2]: https://github.com/antoniorodr/cronboard/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/antoniorodr/cronboard/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/antoniorodr/cronboard/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/antoniorodr/cronboard/compare/v0.6.1...v0.6.2
