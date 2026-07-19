@@ -16,8 +16,6 @@ from textual.widgets import Input
 from cronboard.services.cron_logging.cron_wrapper import get_remote_home, get_files
 from cronboard.services.CronDirEntry import CronDirEntry
 
-# TODO: Fix typing responsiveness when in server
-
 
 class CronAutoComplete(PathAutoComplete):
     def __init__(self, target, ssh_client=None):
@@ -25,6 +23,7 @@ class CronAutoComplete(PathAutoComplete):
         self.ssh_client: SSHClient | None = ssh_client
         self.target_state = target
         self.directory_cache: dict[str, list[CronDirEntry]] = {}
+        self._dropdown_results_cache: dict[str, list[DropdownItem]] = {}
         self._sftp: SFTPClient | None = None
         self._remote_home = None
 
@@ -87,9 +86,16 @@ class CronAutoComplete(PathAutoComplete):
                 self.directory_cache[cache_key] = entries
             except OSError:
                 return []
+
+        cached_results: list[DropdownItem] | None = self._dropdown_results_cache.get(
+            cache_key
+        )
+
+        if cached_results:
+            return cached_results
+
         results: list[tuple[PathDropdownItem, bool]] = []
         for entry in entries:
-            # Only include the entry name, not the full path
             completion: str = entry.name
             if not self.show_dotfiles and completion.startswith("."):
                 continue
@@ -102,13 +108,15 @@ class CronAutoComplete(PathAutoComplete):
         results.sort(key=lambda x: self.sort_key(x[0]))
         folder_prefix: Content = self.folder_prefix
         file_prefix: Content = self.file_prefix
-        return [
+        dropdown_items = [
             DropdownItem(
                 item.main,
                 prefix=folder_prefix if is_dir else file_prefix,
             )
             for item, is_dir in results
         ]
+        self._dropdown_results_cache[cache_key] = dropdown_items
+        return dropdown_items
 
     def on_unmount(self):
         if self._sftp:
