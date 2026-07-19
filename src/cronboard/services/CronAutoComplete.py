@@ -1,3 +1,6 @@
+from textual.content import Content
+from paramiko.sftp_client import SFTPClient
+from paramiko.client import SSHClient
 from os import DirEntry
 from textual_autocomplete import (
     DropdownItem,
@@ -17,10 +20,10 @@ from cronboard.services.CronDirEntry import CronDirEntry
 class CronAutoComplete(PathAutoComplete):
     def __init__(self, target, ssh_client=None):
         super().__init__(target)
-        self.ssh_client = ssh_client
+        self.ssh_client: SSHClient | None = ssh_client
         self.target_state = target
         self.directory_cache: dict[str, list[CronDirEntry]] = {}
-        self._sftp = None
+        self._sftp: SFTPClient | None = None
         self._remote_home = None
 
     def get_candidates(self, target_state: TargetState) -> list[DropdownItem]:
@@ -30,32 +33,36 @@ class CronAutoComplete(PathAutoComplete):
         """
         if self.ssh_client:
             if not self._remote_home:
-                self._remote_home = get_remote_home(self.ssh_client)
+                self._remote_home: str | None = get_remote_home(self.ssh_client)
             if self._remote_home:
                 home_path = Path(self._remote_home)
         else:
-            home_path = Path.home()
+            home_path: Path = Path.home()
 
-        current_input_full = target_state.text[: target_state.cursor_position]
+        current_input_full: str = target_state.text[: target_state.cursor_position]
         # Hide Autocomplete when entering new command section
         if current_input_full.endswith(" "):
             return []
         # Get the last segment of the current full input
-        current_input = current_input_full.split()[-1] if current_input_full else ""
+        current_input: str = (
+            current_input_full.split()[-1] if current_input_full else ""
+        )
 
         if "/" in current_input:
-            last_slash_index = current_input.rindex("/")
-            path_segment = current_input[:last_slash_index] or "/"
-            directory = home_path / path_segment if path_segment != "/" else self.path
+            last_slash_index: int = current_input.rindex("/")
+            path_segment: str = current_input[:last_slash_index] or "/"
+            directory: Path = (
+                home_path / path_segment if path_segment != "/" else self.path
+            )
         else:
-            directory = home_path
+            directory: Path = home_path
 
         # Use the directory path as the cache key
         cache_key = str(directory)
-        cached_entries = self.directory_cache.get(cache_key)
+        cached_entries: list[CronDirEntry] | None = self.directory_cache.get(cache_key)
 
         if cached_entries is not None:
-            entries = cached_entries
+            entries: list[CronDirEntry] = cached_entries
         else:
             try:
                 if not self.ssh_client:
@@ -69,9 +76,9 @@ class CronAutoComplete(PathAutoComplete):
                         entries.append(cron_dir_entry)
                 else:
                     if not self._sftp:
-                        self._sftp = self.ssh_client.open_sftp()
+                        self._sftp: SFTPClient = self.ssh_client.open_sftp()
 
-                    entries = get_files(
+                    entries: list[CronDirEntry] = get_files(
                         self.ssh_client, str(directory), sftp=self._sftp
                     )
 
@@ -81,7 +88,7 @@ class CronAutoComplete(PathAutoComplete):
         results: list[tuple[PathDropdownItem, bool]] = []
         for entry in entries:
             # Only include the entry name, not the full path
-            completion = entry.name
+            completion: str = entry.name
             if not self.show_dotfiles and completion.startswith("."):
                 continue
             if entry.is_dir():
@@ -91,8 +98,8 @@ class CronAutoComplete(PathAutoComplete):
             )
 
         results.sort(key=lambda x: self.sort_key(x[0]))
-        folder_prefix = self.folder_prefix
-        file_prefix = self.file_prefix
+        folder_prefix: Content = self.folder_prefix
+        file_prefix: Content = self.file_prefix
         return [
             DropdownItem(
                 item.main,
@@ -108,13 +115,17 @@ class CronAutoComplete(PathAutoComplete):
 
     def get_search_string(self, target_state: TargetState) -> str:
         """Return only the current path segment for searching in the dropdown."""
-        current_input_full = target_state.text[: target_state.cursor_position].strip()
+        current_input_full: str = target_state.text[
+            : target_state.cursor_position
+        ].strip()
         # Get the last segment of the current full input
-        current_input = current_input_full.split()[-1] if current_input_full else ""
+        current_input: str = (
+            current_input_full.split()[-1] if current_input_full else ""
+        )
 
         if "/" in current_input:
-            last_slash_index = current_input.rindex("/")
-            search_string = current_input[last_slash_index + 1 :]
+            last_slash_index: int = current_input.rindex("/")
+            search_string: str = current_input[last_slash_index + 1 :]
             return search_string
         else:
             return current_input
@@ -126,21 +137,21 @@ class CronAutoComplete(PathAutoComplete):
             # There's a slash before the cursor, so we only want to replace
             # the text after the last slash with the selected value
             try:
-                replace_start_index = path_input.rindex("/", 0, cursor_position)
+                replace_start_index: int = path_input.rindex("/", 0, cursor_position)
             except ValueError:
                 # No slashes, so we do a full replacement
-                new_value = value
-                new_cursor_position = len(value)
+                new_value: str = value
+                new_cursor_position: int = len(value)
             else:
                 # Keep everything before and including the slash before the cursor.
-                path_prefix = path_input[: replace_start_index + 1]
-                new_value = path_prefix + value
-                new_cursor_position = len(path_prefix) + len(value)
+                path_prefix: str = path_input[: replace_start_index + 1]
+                new_value: str = path_prefix + value
+                new_cursor_position: int = len(path_prefix) + len(value)
             return new_value, new_cursor_position
 
-        target = self.target
-        current_input = state.text.strip()
-        cursor_position = state.cursor_position
+        target: Input = self.target
+        current_input: str = state.text.strip()
+        cursor_position: int = state.cursor_position
 
         # Get relevant space separated segment to complete, to keep other segments intact
         # e.g. "cp PATH_1 PATH_2" we must check which part to complete and keep the rest of the string
@@ -149,18 +160,18 @@ class CronAutoComplete(PathAutoComplete):
         string_after = ""
         # Exactly two parts to complete
         if len(current_input.split()) == 2:
-            first_split_index = current_input.index(" ")
+            first_split_index: int = current_input.index(" ")
             # completing the first part
             if cursor_position <= first_split_index + 1:
-                string_to_replace = current_input[:first_split_index]
-                string_after = current_input[first_split_index + 1 :]
+                string_to_replace: str = current_input[:first_split_index]
+                string_after: str = current_input[first_split_index + 1 :]
                 new_value, new_cursor_position = get_new_path_string(
                     path_input=string_to_replace, cursor_position=cursor_position
                 )
             # completing the second part
             else:
-                string_before = current_input[:first_split_index]
-                string_to_replace = current_input[first_split_index + 1 :]
+                string_before: str = current_input[:first_split_index]
+                string_to_replace: str = current_input[first_split_index + 1 :]
                 new_value, new_cursor_position = get_new_path_string(
                     path_input=string_to_replace, cursor_position=cursor_position
                 )
@@ -169,36 +180,36 @@ class CronAutoComplete(PathAutoComplete):
         # More than two parts
         elif len(current_input.split()) > 2:
             if current_input.index(" ") >= cursor_position:
-                first_split_index = current_input.index(" ")
+                first_split_index: int = current_input.index(" ")
             else:
-                first_split_index = current_input.rindex(" ", 0, cursor_position)
+                first_split_index: int = current_input.rindex(" ", 0, cursor_position)
 
             if current_input.rindex(" ") <= cursor_position:
-                last_split_index = current_input.rindex(" ")
+                last_split_index: int = current_input.rindex(" ")
             else:
-                last_split_index = current_input.index(" ", cursor_position)
+                last_split_index: int = current_input.index(" ", cursor_position)
             # completing the first part
             if cursor_position <= first_split_index + 1:
-                string_to_replace = current_input[:first_split_index]
-                string_after = current_input[first_split_index + 1 :]
+                string_to_replace: str = current_input[:first_split_index]
+                string_after: str = current_input[first_split_index + 1 :]
                 new_value, new_cursor_position = get_new_path_string(
                     path_input=string_to_replace, cursor_position=cursor_position
                 )
             # completing the last part
             elif first_split_index + 1 < cursor_position < last_split_index + 1:
-                string_before = current_input[:first_split_index]
-                string_to_replace = current_input[
+                string_before: str = current_input[:first_split_index]
+                string_to_replace: str = current_input[
                     first_split_index + 1 : last_split_index
                 ]
-                string_after = current_input[last_split_index:]
+                string_after: str = current_input[last_split_index:]
                 new_value, new_cursor_position = get_new_path_string(
                     path_input=string_to_replace, cursor_position=cursor_position
                 )
                 new_cursor_position += len(string_before) + 1
             # completing the last part
             else:
-                string_before = current_input[:first_split_index]
-                string_to_replace = current_input[first_split_index + 1 :]
+                string_before: str = current_input[:first_split_index]
+                string_to_replace: str = current_input[first_split_index + 1 :]
                 new_value, new_cursor_position = get_new_path_string(
                     path_input=string_to_replace, cursor_position=cursor_position
                 )
