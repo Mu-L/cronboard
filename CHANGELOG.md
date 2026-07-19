@@ -5,31 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.3] - 19.07.2026
+
+### Changed
+- Update version
+- Create cache for dropdown items
+- Update by @antoniorodr
+
 ## [0.7.2] - 19.07.2026
 
 ### Added
-- Add type annotations
-- Add import to be used on typing
-- Add `everforest_dark_hard` theme to the palette
-- Add debugpy as dev dependency
+- Add type annotations by @antoniorodr
+- Add import to be used on typing by @antoniorodr
+- Add `everforest_dark_hard` theme to the palette by @antoniorodr
+- Add debugpy as dev dependency by @antoniorodr
 
 ### Changed
-- Update dependencies
-- `get_files` used the cached sftp for better performance
-- Create `on_unmount` to close sftp connection
-- Send the cached `sftp` to `get_files`
-- Create cache for `sftp` and `home_path`
-- Convert `results` to a list of tuples
-- `get_candidates` function sends dir when `get_files` called
-- `get_files` is now taking `path` as arg
-- Update imports
-- Create wrapper `CronDirEntry`
-- Change line split
-- Update import after name change
-- Update imports to use correct path
-- Change import to use correct path
-- Rename folder `logging` to `cron_logging`
-- Change linting
+- Update dependencies by @antoniorodr
+- `get_files` used the cached sftp for better performance by @antoniorodr
+- Create `on_unmount` to close sftp connection by @antoniorodr
+- Send the cached `sftp` to `get_files` by @antoniorodr
+- Create cache for `sftp` and `home_path` by @antoniorodr
+- Convert `results` to a list of tuples by @antoniorodr
+- `get_candidates` function sends dir when `get_files` called by @antoniorodr
+- `get_files` is now taking `path` as arg by @antoniorodr
+- Update imports by @antoniorodr
+- Create wrapper `CronDirEntry` by @antoniorodr
+- Change line split by @antoniorodr
+- Update import after name change by @antoniorodr
+- Update imports to use correct path by @antoniorodr
+- Change import to use correct path by @antoniorodr
+- Rename folder `logging` to `cron_logging` by @antoniorodr
+- Change linting by @antoniorodr
 - Flake gets the version dynamically from the `pyproject` file by @antoniorodr
 - Nix installation back to the docs by @antoniorodr
 - Workflow_dispatch by @antoniorodr
@@ -37,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update `CHANGELOG.md` by @antoniorodr
 
 ### Fixed
-- Fix autocompletion on servers
+- Fix autocompletion on servers by @antoniorodr
 
 ### Removed
 - Delete workflow_dispatch options by @antoniorodr
@@ -552,6 +559,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### New Contributors
 * @antoniorodr made their first contribution
 
+[0.7.3]: https://github.com/antoniorodr/cronboard/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/antoniorodr/cronboard/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/antoniorodr/cronboard/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/antoniorodr/cronboard/compare/v0.6.2...v0.7.0
