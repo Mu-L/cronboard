@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update `CHANGELOG.md` by @antoniorodr
 
 ### Fixed
-- Fix autocompletion on servers (still slow/clunky responsiveness)
+- Fix autocompletion on servers
 
 ### Removed
 - Delete workflow_dispatch options by @antoniorodr
