@@ -1,3 +1,5 @@
+from textual.widget import Widget
+from paramiko.client import SSHClient
 from textual.app import ComposeResult
 from crontab import CronTab
 from textual.widgets import Button, Label, Input, RadioButton, RadioSet
@@ -13,7 +15,7 @@ from cronboard.services.cron_logging.cron_wrapper import (
 from cronboard.widgets.VimKeysRadioSet import VimKeysRadioSet
 from cronboard.services.CronAutoComplete import CronAutoComplete
 
-CRON_ALIASES = {
+CRON_ALIASES: dict[str, None | str] = {
     "@reboot": None,
     "@hourly": "0 * * * *",
     "@daily": "0 0 * * *",
@@ -40,14 +42,14 @@ class CronCreator(ModalScreen[bool]):
         crontab_user=None,
     ) -> None:
         super().__init__()
-        self.expression = expression
-        self.command = command
-        self.identificator = identificator
-        self.log_enabled = has_wrapper(command) if command else False
+        self.expression: str | None = expression
+        self.command: str | None = command
+        self.identificator: str | None = identificator
+        self.log_enabled: bool = has_wrapper(command) if command else False
         self.cron: CronTab = cron
-        self.remote = remote
-        self.ssh_client = ssh_client
-        self.crontab_user = crontab_user
+        self.remote: bool = remote
+        self.ssh_client: SSHClient | None = ssh_client
+        self.crontab_user: CronTab | None = crontab_user
 
     def compose(self) -> ComposeResult:
         with Grid(id="dialog"):
@@ -103,27 +105,27 @@ class CronCreator(ModalScreen[bool]):
                 )
                 yield Label("", id="error")
 
-    async def action_close_modal(self):
+    async def action_close_modal(self) -> None:
         await self.dismiss(False)
 
-    def _show_error(self, message: str):
-        error_label = self.query_one("#error")
+    def _show_error(self, message: str) -> None:
+        error_label: Widget = self.query_one("#error")
         error_label.update(message)
         error_label.add_class(self._ERROR_VISIBLE_CLASS)
 
-    def _clear_error(self):
-        error_label = self.query_one("#error")
+    def _clear_error(self) -> None:
+        error_label: Widget = self.query_one("#error")
         error_label.update("")
         error_label.remove_class(self._ERROR_VISIBLE_CLASS)
 
-    def _has_error(self):
-        error_label = self.query_one("#error")
+    def _has_error(self) -> bool:
+        error_label: Widget = self.query_one("#error")
         return error_label.has_class(self._ERROR_VISIBLE_CLASS)
 
     def on_input_changed(self, event: Input.Changed) -> None:
         self._clear_error()
         if event.input.id == "identificator":
-            ident = event.value.strip()
+            ident: str = event.value.strip()
             if not ident:
                 self._show_error("ID cannot be empty.")
                 return
@@ -135,8 +137,8 @@ class CronCreator(ModalScreen[bool]):
         if event.input.id != "expression":
             return
 
-        label_desc = self.query_one("#label_desc", Label)
-        expr = event.value.strip()
+        label_desc: Label = self.query_one("#label_desc", Label)
+        expr: str = event.value.strip()
         self.expression_description(expr, label_desc)
 
     def on_radio_set_changed(self, event: RadioSet.Changed) -> None:
@@ -153,12 +155,12 @@ class CronCreator(ModalScreen[bool]):
         if self._has_error():
             return
 
-        identificator_input = self.query_one("#identificator", Input)
-        expression_input = self.query_one("#expression", Input)
-        command_input = self.query_one("#command", Input)
-        expression = expression_input.value
-        command = command_input.value
-        identificator = identificator_input.value
+        identificator_input: Input = self.query_one("#identificator", Input)
+        expression_input: Input = self.query_one("#expression", Input)
+        command_input: Input = self.query_one("#command", Input)
+        expression: str = expression_input.value
+        command: str = command_input.value
+        identificator: str = identificator_input.value
 
         if not identificator:
             self._show_error("ID cannot be empty.")
@@ -218,12 +220,12 @@ class CronCreator(ModalScreen[bool]):
             if len(expr.split()) > 5:
                 raise ValueError("Invalid cron expression")
 
-            expr = CRON_ALIASES.get(expr, expr)
+            expr: str = CRON_ALIASES.get(expr, expr)
 
             options = Options()
             options.locale_code = "en"
             options.use_24hour_time_format = True
-            desc = ExpressionDescriptor(expr, options).get_description()
+            desc: str = ExpressionDescriptor(expr, options).get_description()
 
             label_desc.update(desc)
             label_desc.remove_class("error")
@@ -233,12 +235,12 @@ class CronCreator(ModalScreen[bool]):
             label_desc.remove_class("success")
             label_desc.add_class("error")
 
-    def write_cron_changes(self):
+    def write_cron_changes(self) -> None:
         """Write cron changes to appropriate destination (local or remote)"""
         if self.remote and self.ssh_client:
             try:
                 new_crontab_content = self.cron.render()
-                crontab_cmd = (
+                crontab_cmd: str = (
                     f"crontab -u {self.crontab_user} -"
                     if self.crontab_user
                     else "crontab -"
@@ -247,8 +249,8 @@ class CronCreator(ModalScreen[bool]):
                 stdin.write(new_crontab_content)
                 stdin.channel.shutdown_write()
 
-                exit_status = stdin.channel.recv_exit_status()
-                errors = stderr.read().decode().strip()
+                exit_status: str = stdin.channel.recv_exit_status()
+                errors: str = stderr.read().decode().strip()
 
                 if errors or exit_status != 0:
                     self.notify(f"Failed to write remote crontab: {errors}")
