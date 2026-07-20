@@ -25,7 +25,7 @@ class CronServers(Widget):
 
     def __init__(self) -> None:
         super().__init__()
-        self.servers = self.load_servers()
+        self.servers: dict = self.load_servers()
         self.current_ssh_client = None
         self.current_cron_table = None
         self.current_server_name = None
@@ -45,7 +45,7 @@ class CronServers(Widget):
         )
 
     def on_mount(self) -> None:
-        servers_tree = self.query_one("#servers-tree", Tree)
+        servers_tree: Tree = self.query_one("#servers-tree", Tree)
         for server_id, server_info in self.servers.items():
             servers_tree.root.add_leaf(
                 f"{server_info['name']}: {server_info.get('crontab_user', '')}",
@@ -54,7 +54,7 @@ class CronServers(Widget):
         servers_tree.refresh()
 
     def action_connect_server(self) -> None:
-        servers_tree = self.query_one("#servers-tree", Tree)
+        servers_tree: Tree = self.query_one("#servers-tree", Tree)
         if servers_tree.cursor_node and servers_tree.cursor_node != servers_tree.root:
             server_id = servers_tree.cursor_node.data
             server_info = self.servers.get(server_id)
