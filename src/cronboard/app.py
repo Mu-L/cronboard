@@ -1,3 +1,4 @@
+from textual.content import Content
 import tomllib
 from importlib.metadata import version, PackageNotFoundError
 from crontab import CronTab
@@ -52,7 +53,7 @@ def is_form_element(element):
 class CronBoard(App):
     """A Textual App to manage cron jobs."""
 
-    BASE_DIR = Path(__file__).resolve().parent
+    BASE_DIR: Path = Path(__file__).resolve().parent
     CSS_PATH = BASE_DIR / "static" / "css" / "cronboard.tcss"
 
     BINDINGS = [
@@ -61,8 +62,8 @@ class CronBoard(App):
     ]
 
     def compose(self) -> ComposeResult:
-        version = self.get_version()
-        self.config_path = Path.home() / ".config/cronboard/config.toml"
+        version: str = self.get_version()
+        self.config_path: Path = Path.home() / ".config/cronboard/config.toml"
         yield Label(
             f"""▄▖      ▄        ▌
 ▌ ▛▘▛▌▛▌▙▘▛▌▀▌▛▘▛▌
@@ -84,9 +85,9 @@ class CronBoard(App):
 
     def on_mount(self) -> None:
         self.register_theme(everforest_dark_hard)
-        config = self.load_config()
-        saved_theme = config.get("theme", "catppuccin-mocha")
-        self.theme = saved_theme
+        config: dict = self.load_config()
+        saved_theme: str = config.get("theme", "catppuccin-mocha")
+        self.theme: str = saved_theme
         self.servers = None
         self.local_table = CronTable(id="local-crontable")
         self.content_container.mount(self.local_table)
@@ -94,7 +95,7 @@ class CronBoard(App):
         self.set_focus(self.local_table)
         self.tab_disabled = False
 
-    def load_config(self):
+    def load_config(self) -> dict:
         if self.config_path.exists():
             try:
                 with self.config_path.open("rb") as f:
@@ -103,7 +104,7 @@ class CronBoard(App):
                 print(f"Warning: Failed to load config: {e}")
         return {}
 
-    def watch_theme(self, theme: str):
+    def watch_theme(self, theme: str) -> None:
         try:
             self.config_path.parent.mkdir(parents=True, exist_ok=True)
             with self.config_path.open("w") as f:
@@ -112,7 +113,7 @@ class CronBoard(App):
             print(f"Warning: Failed to save theme: {e}")
 
     def on_tabs_tab_activated(self, event: Tabs.TabActivated) -> None:
-        tab_label = event.tab.label
+        tab_label: Content = event.tab.label
         if tab_label == "Local":
             self.show_tab_content(0)
         elif tab_label == "Servers":
@@ -130,8 +131,8 @@ class CronBoard(App):
             self.local_table.display = False
             self.servers.display = True
 
-    def toggle_tab_enablement(self):
-        self.tab_disabled = not self.tab_disabled
+    def toggle_tab_enablement(self) -> None:
+        self.tab_disabled: bool = not self.tab_disabled
 
     def on_key(self, event: events.Key) -> None:
         if event.key != "tab":
@@ -148,14 +149,14 @@ class CronBoard(App):
         self.action_next_tab_and_focus()
 
     def action_next_tab_and_focus(self) -> None:
-        tabs = self.tabs
-        tab_widgets = list(tabs.query(Tab))
-        tab_ids = [tab.id for tab in tab_widgets]
-        current = tabs.active
-        index = tab_ids.index(current)
+        tabs: CronTabs = self.tabs
+        tab_widgets: list[Tab] = list(tabs.query(Tab))
+        tab_ids: list[str] = [tab.id for tab in tab_widgets]
+        current: str = tabs.active
+        index: int = tab_ids.index(current)
 
-        next_index = (index + 1) % len(tab_ids)
-        next_tab_id = tab_ids[next_index]
+        next_index: int = (index + 1) % len(tab_ids)
+        next_tab_id: str = tab_ids[next_index]
 
         tabs.active = next_tab_id
 
@@ -248,7 +249,7 @@ class CronBoard(App):
             check_save,
         )
 
-    def get_version(self):
+    def get_version(self) -> str:
         try:
             return version("cronboard")
         except PackageNotFoundError:
