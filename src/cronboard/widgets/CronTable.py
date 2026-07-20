@@ -1,3 +1,5 @@
+from cronboard.screens.CronSSHModal import CronSSHModal
+from paramiko.client import SSHClient
 from crontab import CronTab
 from textual.widgets import DataTable
 from textual.binding import Binding
@@ -33,9 +35,9 @@ class CronTable(DataTable):
 
     def __init__(self, remote=False, ssh_client=None, crontab_user=None, **kwargs):
         super().__init__(**kwargs)
-        self.remote = remote
-        self.ssh_client = ssh_client
-        self.crontab_user = crontab_user
+        self.remote: bool = remote
+        self.ssh_client: SSHClient | None = ssh_client
+        self.crontab_user: CronTab | None = crontab_user
         self._rows_data: list[tuple] = []
         self._search_matches: list[int] = []
         self._search_index: int = -1
@@ -54,18 +56,18 @@ class CronTable(DataTable):
         )
 
         if self.remote and self.ssh_client:
-            crontab_cmd = (
+            crontab_cmd: str = (
                 f"crontab -u {self.crontab_user} -l"
                 if self.crontab_user
                 else "crontab -l"
             )
             _, stdout, _ = self.ssh_client.exec_command(crontab_cmd)
-            exit_status = stdout.channel.recv_exit_status()
+            exit_status: str = stdout.channel.recv_exit_status()
 
             if exit_status == 1:
                 self.crontab_content = ""
             else:
-                self.crontab_content = stdout.read().decode() if stdout else ""
+                self.crontab_content: str = stdout.read().decode() if stdout else ""
 
             self.ssh_cron: CronTab | None = CronTab(tab=self.crontab_content)
         else:
@@ -75,7 +77,7 @@ class CronTable(DataTable):
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         """Check if an action may run."""
-        is_empty = self.row_count == 0
+        is_empty: bool = self.row_count == 0
 
         if action in (
             "cron_search",
@@ -94,18 +96,18 @@ class CronTable(DataTable):
         return True
 
     def on_key(self, event):
-        is_empty = self.row_count == 0
+        is_empty: bool = self.row_count == 0
         if event.key == "space":
             self.notify(f"empty: {is_empty}")
 
-    def parse_cron(self, cron):
+    def parse_cron(self, cron) -> None:
         for job in cron:
-            expr = job.slices.render()
-            cmd = command_without_wrapper(job.command)
-            log_enabled = has_wrapper(job.command)
-            identificator = job.comment if job.comment else "No ID"
+            expr: str = job.slices.render()
+            cmd: str = command_without_wrapper(job.command)
+            log_enabled: bool = has_wrapper(job.command)
+            identificator: str = job.comment if job.comment else "No ID"
             try:
-                active_status = "Active" if job.is_enabled() else "Paused"
+                active_status: str = "Active" if job.is_enabled() else "Paused"
                 schedule = job.schedule(date_from=datetime.now())
                 next_dt = (
                     schedule.get_next().strftime("%d.%m.%Y at %H:%M")
@@ -147,10 +149,10 @@ class CronTable(DataTable):
                 )
             )
 
-    def load_crontabs(self):
+    def load_crontabs(self) -> None:
         self.clear()
-        self._rows_data = []
-        self._search_matches = []
+        self._rows_data: list = []
+        self._search_matches: list = []
         self._search_index = -1
         self._search_query = ""
 
@@ -162,7 +164,9 @@ class CronTable(DataTable):
 
     def action_create_cronjob_keybind(self) -> None:
         """Handle create cronjob action by calling the main app's method."""
-        used_cron = self.ssh_cron if self.remote and self.ssh_client else self.cron
+        used_cron: CronTab | None = (
+            self.ssh_cron if self.remote and self.ssh_client else self.cron
+        )
         self.app.action_create_cronjob(
             used_cron,
             remote=self.remote,
@@ -171,7 +175,9 @@ class CronTable(DataTable):
         )
 
     def action_edit_cronjob_keybind(self, identificator, expression, command) -> None:
-        used_cron = self.ssh_cron if self.remote and self.ssh_client else self.cron
+        used_cron: CronTab | None = (
+            self.ssh_cron if self.remote and self.ssh_client else self.cron
+        )
         self.app.action_edit_cronjob(
             used_cron,
             identificator=identificator,
@@ -183,7 +189,9 @@ class CronTable(DataTable):
         )
 
     def action_delete_cronjob_keybind(self, job) -> None:
-        used_cron = self.ssh_cron if self.remote and self.ssh_client else self.cron
+        used_cron: CronTab | None = (
+            self.ssh_cron if self.remote and self.ssh_client else self.cron
+        )
         self.app.action_delete_cronjob(
             job,
             cron=used_cron,
@@ -195,18 +203,18 @@ class CronTable(DataTable):
     def action_refresh(self) -> None:
         """Refresh the cronjob list."""
         if self.remote and self.ssh_client:
-            crontab_cmd = (
+            crontab_cmd: str = (
                 f"crontab -u {self.crontab_user} -l"
                 if self.crontab_user
                 else "crontab -l"
             )
             _, stdout, _ = self.ssh_client.exec_command(crontab_cmd)
-            exit_status = stdout.channel.recv_exit_status()
+            exit_status: str = stdout.channel.recv_exit_status()
 
             if exit_status == 1:
                 self.crontab_content = ""
             else:
-                self.crontab_content = stdout.read().decode() if stdout else ""
+                self.crontab_content: str = stdout.read().decode() if stdout else ""
 
             self.ssh_cron = CronTab(tab=self.crontab_content)
         else:
@@ -224,13 +232,13 @@ class CronTable(DataTable):
 
     def action_clear_search(self) -> None:
         self._search_query = ""
-        self._search_matches = []
+        self._search_matches: list = []
         self._search_index = -1
         self._restore_cells()
 
     def apply_search(self, query: str) -> None:
-        self._search_query = query.lower() if query else ""
-        self._search_matches = []
+        self._search_query: str = query.lower() if query else ""
+        self._search_matches: list[int] = []
 
         if not self._search_query:
             self._restore_cells()
@@ -262,17 +270,17 @@ class CronTable(DataTable):
 
     def _highlight_text(self, text: str, query: str) -> Text:
         result = Text(text)
-        q_lower = query.lower()
-        idx = text.lower().find(q_lower)
+        q_lower: str = query.lower()
+        idx: int = text.lower().find(q_lower)
         while idx >= 0:
             result.stylize("bold yellow", idx, idx + len(query))
-            idx = text.lower().find(q_lower, idx + 1)
+            idx: int = text.lower().find(q_lower, idx + 1)
         return result
 
     def _highlight_matches(self) -> None:
         self._restore_cells()
         for i in self._search_matches:
-            row_data = self._rows_data[i]
+            row_data: tuple = self._rows_data[i]
             for col_idx in range(3):
                 text = str(row_data[col_idx])
                 if self._search_query.lower() in text.lower():
@@ -289,22 +297,24 @@ class CronTable(DataTable):
     def action_search_next(self) -> None:
         if not self._search_matches:
             return
-        self._search_index = (self._search_index + 1) % len(self._search_matches)
+        self._search_index: int = (self._search_index + 1) % len(self._search_matches)
         self.move_cursor(row=self._search_matches[self._search_index])
 
     def action_search_prev(self) -> None:
         if not self._search_matches:
             return
-        self._search_index = (self._search_index - 1) % len(self._search_matches)
+        self._search_index: int = (self._search_index - 1) % len(self._search_matches)
         self.move_cursor(row=self._search_matches[self._search_index])
 
     def action_pause_cronjob(self) -> None:
 
-        row = self.get_row_at(self.cursor_row)
-        identificator = row[0]
-        cmd = row[2]
+        row: list = self.get_row_at(self.cursor_row)
+        identificator: str = row[0]
+        cmd: str = row[2]
 
-        cron_to_use = self.ssh_cron if (self.remote and self.ssh_client) else self.cron
+        cron_to_use: CronTab | None = (
+            self.ssh_cron if (self.remote and self.ssh_client) else self.cron
+        )
 
         job_to_toggle = self.find_if_cronjob_exists(identificator, cmd)
 
@@ -335,8 +345,7 @@ class CronTable(DataTable):
             self.load_crontabs()
 
     def action_edit_cronjob(self) -> None:
-
-        row = self.get_row_at(self.cursor_row)
+        row: list = self.get_row_at(self.cursor_row)
         identificator = row[0]
         expr = row[1]
         cmd = row[2]
@@ -369,7 +378,7 @@ class CronTable(DataTable):
     def action_delete_cronjob(self) -> None:
         """Delete the selected cronjob."""
 
-        row = self.get_row_at(self.cursor_row)
+        row: list = self.get_row_at(self.cursor_row)
         identificator = row[0]
         cmd = row[2]
 
@@ -379,9 +388,11 @@ class CronTable(DataTable):
             self.action_delete_cronjob_keybind(job_to_delete)
 
     def find_if_cronjob_exists(self, identificator: str, cmd: str):
-        cron_to_use = self.ssh_cron if (self.remote and self.ssh_client) else self.cron
+        cron_to_use: CronTab | None = (
+            self.ssh_cron if (self.remote and self.ssh_client) else self.cron
+        )
 
-        cmd_variants = {
+        cmd_variants: set = {
             cmd,
             wrap_command(
                 cmd,
@@ -407,9 +418,9 @@ class CronTable(DataTable):
             return False
 
         try:
-            new_crontab_content = self.ssh_cron.render()
+            new_crontab_content: CronSSHModal = self.ssh_cron.render()
 
-            crontab_cmd = (
+            crontab_cmd: str = (
                 f"crontab -u {self.crontab_user} -"
                 if self.crontab_user
                 else "crontab -"
@@ -418,8 +429,8 @@ class CronTable(DataTable):
             stdin.write(new_crontab_content)
             stdin.channel.shutdown_write()
 
-            exit_status = stdin.channel.recv_exit_status()
-            errors = stderr.read().decode().strip()
+            exit_status: str = stdin.channel.recv_exit_status()
+            errors: str = stderr.read().decode().strip()
 
             if errors:
                 print(f"❌ Failed to write remote crontab: {errors}")
@@ -439,7 +450,7 @@ class CronTable(DataTable):
     def action_view_logs(self) -> None:
         """View logs for the selected cronjob."""
 
-        row = self.get_row_at(self.cursor_row)
+        row: list = self.get_row_at(self.cursor_row)
         identificator = row[0]
 
         self.app.push_screen(
