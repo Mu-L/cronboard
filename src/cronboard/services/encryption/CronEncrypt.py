@@ -3,20 +3,20 @@ import os
 from cronboard.config import CONFIG_DIR, KEY_FILE
 
 
-def get_or_create_key():
+def get_or_create_key() -> bytes:
     os.makedirs(CONFIG_DIR, exist_ok=True)
     if not os.path.exists(KEY_FILE):
-        key = Fernet.generate_key()
+        key: bytes = Fernet.generate_key()
         with open(KEY_FILE, "wb") as key_file:
             key_file.write(key)
         os.chmod(KEY_FILE, 0o600)
     else:
         with open(KEY_FILE, "rb") as key_file:
-            key = key_file.read()
+            key: bytes = key_file.read()
     return key
 
 
-fernet = Fernet(get_or_create_key())
+fernet: Fernet = Fernet(get_or_create_key())
 
 
 def encrypt_password(password: str) -> str:
