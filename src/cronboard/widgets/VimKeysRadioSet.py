@@ -1,4 +1,5 @@
 from __future__ import annotations
+from textual.widget import Widget
 
 from textual.binding import Binding
 from textual.events import Mount
@@ -13,13 +14,13 @@ class VimKeysRadioSet(RadioSet):
         Binding("k", "previous_button", "Up"),
     ]
 
-    def _on_mount(self, event: Mount) -> None:
+    def _on_mount(self, _: Mount) -> None:
         self.call_next(self._sync_selected_to_pressed_option)
 
     def _sync_selected_to_pressed_option(self) -> None:
-        pressed_index = self.pressed_index
+        pressed_index: int = self.pressed_index
         if pressed_index >= 0:
-            self._selected = pressed_index
+            self._selected: int = pressed_index
 
     def action_next_button(self) -> None:
         super().action_next_button()
@@ -32,7 +33,7 @@ class VimKeysRadioSet(RadioSet):
     def _apply_keyboard_selection(self) -> None:
         if self._selected is None:
             return
-        button = self._nodes[self._selected]
+        button: Widget = self._nodes[self._selected]
         if not isinstance(button, RadioButton):
             return
         if self._pressed_button is None and any(
