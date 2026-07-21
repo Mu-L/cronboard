@@ -1,3 +1,5 @@
+from textual.css.query import DOMQuery
+from textual.widget import Widget
 from textual.app import ComposeResult
 from textual.widgets import Button, Label, Input
 from textual.containers import Grid, Horizontal, Vertical
@@ -7,7 +9,7 @@ from textual.screen import ModalScreen
 class CronSSHModal(ModalScreen):
     @staticmethod
     def _parse_host_info(host_info: str) -> tuple[str, int]:
-        host_info = host_info.strip()
+        host_info: str = host_info.strip()
         if not host_info:
             raise ValueError("Empty host")
 
@@ -69,10 +71,10 @@ class CronSSHModal(ModalScreen):
 
     def on_input_changed(self, event: Input.Changed) -> None:
         if self.query("#error"):
-            label_error = self.query_one("#error")
+            label_error: Widget = self.query_one("#error")
             label_error.remove()
 
-        error_labels = self.query("#error")
+        error_labels: DOMQuery[Widget] = self.query("#error")
         for label in error_labels:
             label.remove()
 
@@ -82,22 +84,22 @@ class CronSSHModal(ModalScreen):
             return
 
         if event.button.id == "add":
-            host_info = self.query_one("#hostname", Input).value.strip()
-            username = self.query_one("#username", Input).value.strip()
-            password = self.query_one("#password", Input).value.strip()
-            content = self.query_one("#content", Vertical)
-            crontab_user = self.query_one("#crontab_user", Input).value.strip()
+            host_info: str = self.query_one("#hostname", Input).value.strip()
+            username: str = self.query_one("#username", Input).value.strip()
+            password: str = self.query_one("#password", Input).value.strip()
+            content: Vertical = self.query_one("#content", Vertical)
+            crontab_user: str = self.query_one("#crontab_user", Input).value.strip()
 
             try:
                 hostname, port = self._parse_host_info(host_info)
             except ValueError as exc:
                 if not self.query("#error"):
-                    message = str(exc) if str(exc) else "Invalid host format"
+                    message: str = str(exc) if str(exc) else "Invalid host format"
                     error_label = Label(message, id="error")
                     content.mount(error_label)
                 return
 
-            server = {
+            server: dict[str, str | int | None] = {
                 "hostname": hostname,
                 "port": port,
                 "username": username,
