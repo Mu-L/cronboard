@@ -1,3 +1,4 @@
+from paramiko.client import SSHClient
 from textual.app import ComposeResult
 from crontab import CronTab
 from textual.binding import Binding
@@ -24,21 +25,21 @@ class CronDeleteConfirmation(ModalScreen[bool]):
         super().__init__()
         self.server = server
         self.job = job
-        self.cron = cron if cron else CronTab(user=True)
-        self.remote = remote
-        self.ssh_client = ssh_client
-        self.message = message
-        self.crontab_user = crontab_user
+        self.cron: CronTab | None = cron if cron else CronTab(user=True)
+        self.remote: bool = remote
+        self.ssh_client: SSHClient | None = ssh_client
+        self.message: str | None = message
+        self.crontab_user: CronTab | None = crontab_user
 
     def compose(self) -> ComposeResult:
         if self.message:
-            display_message = self.message
+            display_message: str | None = self.message
         elif self.server:
             display_message = (
                 f"Are you sure you want to delete the server '{self.server}' ?"
             )
         elif self.job:
-            deletion = self.job.comment if self.job.comment else "this job"
+            deletion: str | None = self.job.comment if self.job.comment else "this job"
             display_message = f"Are you sure you want to delete '{deletion}' ?"
         else:
             display_message = "Are you sure you want to proceed with deletion?"
@@ -56,7 +57,7 @@ class CronDeleteConfirmation(ModalScreen[bool]):
             id="dialog",
         )
 
-    async def action_close_modal(self):
+    async def action_close_modal(self) -> None:
         await self.dismiss(False)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -65,8 +66,8 @@ class CronDeleteConfirmation(ModalScreen[bool]):
             return
 
         if self.job and self.cron:
-            comment = getattr(self.job, "comment", None)
-            ident = (
+            comment: str | None = getattr(self.job, "comment", None)
+            ident: str | None = (
                 comment.strip()
                 if isinstance(comment, str) and comment.strip()
                 else None
@@ -88,15 +89,16 @@ class CronDeleteConfirmation(ModalScreen[bool]):
                 )
         self.dismiss(True)
 
-    def write_remote_crontab(self):
+    def write_remote_crontab(self) -> bool:
         """Writes the current SSH cron table back to the remote server."""
         if not (self.remote and self.ssh_client):
             return False
 
         try:
-            new_crontab_content = self.cron.render() or ""
+            if self.cron:
+                new_crontab_content: str = self.cron.render() or ""
 
-            crontab_cmd = (
+            crontab_cmd: str = (
                 f"crontab -u {self.crontab_user} -"
                 if self.crontab_user
                 else "crontab -"
@@ -105,8 +107,8 @@ class CronDeleteConfirmation(ModalScreen[bool]):
             stdin.write(new_crontab_content)
             stdin.channel.shutdown_write()
 
-            exit_status = stdin.channel.recv_exit_status()
-            errors = stderr.read().decode().strip()
+            exit_status: str = stdin.channel.recv_exit_status()
+            errors: str = stderr.read().decode().strip()
 
             if errors:
                 print(f"❌ Failed to write remote crontab: {errors}")
