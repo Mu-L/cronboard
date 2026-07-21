@@ -1,4 +1,5 @@
 from __future__ import annotations
+from paramiko.client import SSHClient
 
 from typing import Any
 
@@ -14,6 +15,6 @@ class CronJobDeleted(Message):
         *,
         ssh_client: Any = None,
     ) -> None:
-        self.identificator = identificator
-        self.ssh_client = ssh_client
+        self.identificator: str = identificator
+        self.ssh_client: SSHClient = ssh_client
         super().__init__()
