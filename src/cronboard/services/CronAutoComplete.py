@@ -21,11 +21,11 @@ class CronAutoComplete(PathAutoComplete):
     def __init__(self, target, ssh_client=None):
         super().__init__(target)
         self.ssh_client: SSHClient | None = ssh_client
-        self.target_state = target
+        self.target_state: TargetState = target
         self.directory_cache: dict[str, list[CronDirEntry]] = {}
         self._dropdown_results_cache: dict[str, list[DropdownItem]] = {}
         self._sftp: SFTPClient | None = None
-        self._remote_home = None
+        self._remote_home: str | None = None
 
     def get_candidates(self, target_state: TargetState) -> list[DropdownItem]:
         """Get the candidates for the current path segment.
@@ -108,7 +108,7 @@ class CronAutoComplete(PathAutoComplete):
         results.sort(key=lambda x: self.sort_key(x[0]))
         folder_prefix: Content = self.folder_prefix
         file_prefix: Content = self.file_prefix
-        dropdown_items = [
+        dropdown_items: list[DropdownItem] = [
             DropdownItem(
                 item.main,
                 prefix=folder_prefix if is_dir else file_prefix,
@@ -118,7 +118,7 @@ class CronAutoComplete(PathAutoComplete):
         self._dropdown_results_cache[cache_key] = dropdown_items
         return dropdown_items
 
-    def on_unmount(self):
+    def on_unmount(self) -> None:
         if self._sftp:
             self._sftp.close()
             self._sftp = None
