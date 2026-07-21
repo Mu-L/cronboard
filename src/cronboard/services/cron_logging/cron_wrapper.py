@@ -1,3 +1,4 @@
+from pathlib import Path
 from paramiko.sftp_client import SFTPClient
 import base64
 import binascii
@@ -22,7 +23,7 @@ COMMAND_PAYLOAD_PREFIX = "cronboard1:"
 def get_remote_bash_path(ssh: paramiko.SSHClient) -> str:
     try:
         _, stdout, _ = ssh.exec_command("command -v bash")
-        result = stdout.read().decode().strip()
+        result: str = stdout.read().decode().strip()
         if result:
             return result
     except Exception:
@@ -33,8 +34,8 @@ def get_remote_bash_path(ssh: paramiko.SSHClient) -> str:
 def get_remote_home(ssh: paramiko.SSHClient) -> Optional[str]:
     try:
         _, stdout, stderr = ssh.exec_command("echo ~")
-        home = stdout.read().decode().strip()
-        err = stderr.read().decode().strip()
+        home: str = stdout.read().decode().strip()
+        err: str = stderr.read().decode().strip()
 
         if err:
             print(f"Error: Failed to get HOME: {err}")
@@ -80,7 +81,7 @@ def get_files(
 
 
 def is_wrapper_installed_local() -> bool:
-    target_file = CONFIG_DIR / WRAPPER_DIST
+    target_file: Path = CONFIG_DIR / WRAPPER_DIST
 
     return (
         target_file.exists()
@@ -90,7 +91,7 @@ def is_wrapper_installed_local() -> bool:
 
 
 def is_wrapper_installed_remote(ssh: paramiko.SSHClient) -> bool:
-    home = get_remote_home(ssh)
+    home: str | None = get_remote_home(ssh)
     if not home:
         return False
 
@@ -100,8 +101,8 @@ def is_wrapper_installed_remote(ssh: paramiko.SSHClient) -> bool:
         f"test -f {remote_file} && test -x {remote_file} && echo OK || echo MISSING"
     )
 
-    result = stdout.read().decode().strip()
-    err = stderr.read().decode().strip()
+    result: str = stdout.read().decode().strip()
+    err: str = stderr.read().decode().strip()
 
     if err:
         print(f"Error: {err}")
@@ -118,8 +119,8 @@ def is_wrapper_installed(ssh: paramiko.SSHClient | None = None) -> bool:
 
 
 def install_wrapper_local():
-    target_dir = CONFIG_DIR
-    target_file = CONFIG_DIR / WRAPPER_DIST
+    target_dir: Path = CONFIG_DIR
+    target_file: Path = CONFIG_DIR / WRAPPER_DIST
 
     target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -131,13 +132,13 @@ def install_wrapper_local():
     return str(target_file)
 
 
-def install_wrapper_remote(ssh: paramiko.SSHClient):
-    home = get_remote_home(ssh)
+def install_wrapper_remote(ssh: paramiko.SSHClient) -> str | None:
+    home: str | None = get_remote_home(ssh)
 
     remote_dir = f"{home}/{CONFIG_REL_PATH}"
     remote_file = f"{remote_dir}/{WRAPPER_DIST}"
 
-    sftp = ssh.open_sftp()
+    sftp: SFTPClient = ssh.open_sftp()
 
     try:
         ssh.exec_command(f"mkdir -p {remote_dir}")
@@ -152,7 +153,7 @@ def install_wrapper_remote(ssh: paramiko.SSHClient):
     return remote_file
 
 
-def install_wrapper(ssh: paramiko.SSHClient | None = None):
+def install_wrapper(ssh: paramiko.SSHClient | None = None) -> str | None:
     if ssh is None:
         return install_wrapper_local()
     else:
@@ -160,14 +161,14 @@ def install_wrapper(ssh: paramiko.SSHClient | None = None):
 
 
 def _encode_wrapped_command_payload(command: str) -> str:
-    b64 = base64.b64encode(command.encode("utf-8")).decode("ascii")
+    b64: str = base64.b64encode(command.encode("utf-8")).decode("ascii")
     return f"{COMMAND_PAYLOAD_PREFIX}{b64}"
 
 
 def _decode_wrapped_command_payload(token: str) -> str | None:
     if not token.startswith(COMMAND_PAYLOAD_PREFIX):
         return None
-    raw_b64 = token[len(COMMAND_PAYLOAD_PREFIX) :]
+    raw_b64: str = token[len(COMMAND_PAYLOAD_PREFIX) :]
     try:
         return base64.b64decode(raw_b64, validate=True).decode("utf-8")
     except (ValueError, binascii.Error, UnicodeDecodeError):
@@ -176,21 +177,21 @@ def _decode_wrapped_command_payload(token: str) -> str | None:
 
 def wrap_command(
     command: str, identificator: str, ssh: paramiko.SSHClient | None = None
-):
-    wrapper_path = install_wrapper(ssh)
+) -> str:
+    wrapper_path: str | None = install_wrapper(ssh)
     if wrapper_path is None:
         # If this is None, it means failed to install wrapper in ssh server
         return command
 
     if ssh is not None:
-        bash_path = get_remote_bash_path(ssh)
+        bash_path: str = get_remote_bash_path(ssh)
     else:
-        bash_path = shutil.which("bash") or "/bin/bash"
+        bash_path: str = shutil.which("bash") or "/bin/bash"
     try:
-        parts = shlex.split(command)
+        parts: list[str] = shlex.split(command)
     except ValueError:
         # If it can't be parsed, just wrap it (safer than guessing)
-        parts = []
+        parts: list[str] = []
 
     # Confirm if it already wrapped
     if (
@@ -199,7 +200,7 @@ def wrap_command(
         and parts[1].endswith("cron-wrapper.sh")
     ):
         return command
-    payload = _encode_wrapped_command_payload(command)
+    payload: str = _encode_wrapped_command_payload(command)
     return (
         f"{shlex.quote(bash_path)} {shlex.quote(wrapper_path)} "
         f"{shlex.quote(identificator)} {shlex.quote(payload)}"
@@ -208,7 +209,7 @@ def wrap_command(
 
 def has_wrapper(command: str) -> bool:
     try:
-        parts = shlex.split(command)
+        parts: list[str] = shlex.split(command)
     except ValueError:
         return False
 
@@ -218,16 +219,16 @@ def has_wrapper(command: str) -> bool:
     if not parts[0].endswith("/bash"):
         return False
 
-    wrapper_path = parts[1]
+    wrapper_path: str = parts[1]
 
     return (
         wrapper_path.endswith("cron-wrapper.sh") and bool(parts[2])  # identificator
     )
 
 
-def command_without_wrapper(command: str):
+def command_without_wrapper(command: str) -> str:
     try:
-        parts = shlex.split(command)
+        parts: list[str] = shlex.split(command)
     except ValueError:
         return command
 
@@ -237,7 +238,7 @@ def command_without_wrapper(command: str):
     if not parts[0].endswith("/bash"):
         return command
 
-    wrapper_path = parts[1]
+    wrapper_path: str = parts[1]
 
     if not wrapper_path.endswith("cron-wrapper.sh"):
         return command
@@ -245,7 +246,7 @@ def command_without_wrapper(command: str):
     # strip: bash + wrapper + identificator
     if len(parts) < 4:
         return command
-    decoded = _decode_wrapped_command_payload(parts[3])
+    decoded: str | None = _decode_wrapped_command_payload(parts[3])
     if decoded is not None:
         return decoded
     # Legacy: remainder was split as argv words; best-effort rejoin.
