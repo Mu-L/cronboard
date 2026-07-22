@@ -5,6 +5,8 @@ from textual.screen import ModalScreen
 
 
 class CronInputSearch(ModalScreen):
+    """Modal screen for searching cronjobs"""
+
     BINDINGS = [
         Binding("escape", "cancel_search", "Cancel Search"),
     ]
