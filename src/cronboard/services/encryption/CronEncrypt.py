@@ -4,6 +4,12 @@ from cronboard.config import CONFIG_DIR, KEY_FILE
 
 
 def get_or_create_key() -> bytes:
+    """Creates a new key if it doesn't exist, or returns the existing key.
+
+    Returns:
+        The key as a bytes object.
+    """
+
     os.makedirs(CONFIG_DIR, exist_ok=True)
     if not os.path.exists(KEY_FILE):
         key: bytes = Fernet.generate_key()
@@ -20,12 +26,30 @@ fernet: Fernet = Fernet(get_or_create_key())
 
 
 def encrypt_password(password: str) -> str:
+    """Encrypts the password using Fernet.
+
+    Args:
+        password: The password to encrypt.
+
+    Returns:
+        The encrypted password as a string.
+    """
+
     if not password:
         return ""
     return fernet.encrypt(password.encode()).decode()
 
 
 def decrypt_password(token: str) -> str:
+    """Decrypts the password using Fernet.
+
+    Args:
+        token: The encrypted password as a string.
+
+    Returns:
+        The decrypted password as a string.
+    """
+
     if not token:
         return ""
 
