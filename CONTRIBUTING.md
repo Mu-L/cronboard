@@ -51,7 +51,7 @@ Before contributing, please read through this document to understand how to get 
 6. Run the tool:
 
     ```bash
-    cronboard --help
+    cronboard
     ```
 
 7. (Optional) Uninstall local version when you are done:
