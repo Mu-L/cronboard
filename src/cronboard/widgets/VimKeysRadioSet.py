@@ -7,7 +7,7 @@ from textual.widgets import RadioButton, RadioSet
 
 
 class VimKeysRadioSet(RadioSet):
-    """RadioSet with *j* / *k* keys."""
+    """A RadioSet with Vim-like keyboard navigation."""
 
     BINDINGS = [
         Binding("j", "next_button", "Down"),
@@ -23,10 +23,14 @@ class VimKeysRadioSet(RadioSet):
             self._selected: int = pressed_index
 
     def action_next_button(self) -> None:
+        """Selects the next button."""
+
         super().action_next_button()
         self._apply_keyboard_selection()
 
     def action_previous_button(self) -> None:
+        """Selects the previous button."""
+
         super().action_previous_button()
         self._apply_keyboard_selection()
 
