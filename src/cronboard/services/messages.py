@@ -7,7 +7,12 @@ from textual.message import Message
 
 
 class CronJobDeleted(Message):
-    """Dispatched after a cron job was removed from the crontab so listeners can clean up (e.g. log files)."""
+    """Message posted when a cronjob is deleted.
+
+    Attributes:
+        identificator: The identificator of the cronjob.
+        ssh_client: Paramiko SSH client for remote operations.
+    """
 
     def __init__(
         self,
