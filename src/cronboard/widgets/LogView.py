@@ -34,7 +34,11 @@ _LOG_LIST_SELECTION_DEBOUNCE_SEC: float = 0.3
 
 
 class VirtualLogFileList(ScrollView, can_focus=True):
-    """Scrollable log file list: full list size for the scrollbar, one row rendered per screen line."""
+    """Scrollable log file list: full list size for the scrollbar, one row rendered per screen line.
+
+    Attributes:
+        selected_index: Index of the selected log file.
+    """
 
     ALLOW_MAXIMIZE = True
 
@@ -83,6 +87,8 @@ class VirtualLogFileList(ScrollView, can_focus=True):
         self._emit_selected()
 
     def on_unmount(self) -> None:
+        """Cancels the selection emit timer."""
+
         self._cancel_selection_emit_timer()
 
     def _refresh_dimensions(self) -> None:
@@ -92,9 +98,13 @@ class VirtualLogFileList(ScrollView, can_focus=True):
         self.virtual_size = Size(vw, vh)
 
     def on_resize(self, event: events.Resize) -> None:
+        """Refreshes the dimensions of the widget."""
+
         self._refresh_dimensions()
 
     def on_mount(self) -> None:
+        """Mounts the widget."""
+
         self._refresh_dimensions()
         if self._keys:
             self.selected_index: int = min(self.selected_index, len(self._keys) - 1)
@@ -133,6 +143,8 @@ class VirtualLogFileList(ScrollView, can_focus=True):
             self.refresh()
 
     def action_cursor_up(self) -> None:
+        """Selects the previous log file."""
+
         if not self._keys:
             return
         if self.selected_index > 0:
@@ -142,9 +154,17 @@ class VirtualLogFileList(ScrollView, can_focus=True):
             self.refresh()
 
     def action_select_cursor(self) -> None:
+        """Selects the current log file."""
+
         self._emit_selected_immediate()
 
     def on_click(self, event: events.Click) -> None:
+        """Handles click events.
+
+        Args:
+            event: events.Click object. Identifies the clicked position.
+        """
+
         if not self._keys:
             return
         offset: Offset | None = event.get_content_offset(self)
@@ -161,6 +181,15 @@ class VirtualLogFileList(ScrollView, can_focus=True):
         self.refresh()
 
     def render_line(self, y: int) -> Strip:
+        """Renders a line of the log file list.
+
+        Args:
+            y: Index of the line to render.
+
+        Returns:
+            A Strip object with the rendered line.
+        """
+
         scroll_x, scroll_y = self.scroll_offset
         row: int = scroll_y + y
         width: int = self.size.width
@@ -184,7 +213,7 @@ class VirtualLogFileList(ScrollView, can_focus=True):
 
 
 class VirtualLogLines(ScrollView, can_focus=True):
-    """Log file body: all lines kept in memory; scrollbar reflects full height; only visible rows render."""
+    """Scrollable log file body: all lines kept in memory; scrollbar reflects full height; only visible rows render."""
 
     def __init__(
         self,
@@ -209,6 +238,12 @@ class VirtualLogLines(ScrollView, can_focus=True):
         return max((cell_len(line) for line in lines), default=1)
 
     def set_content(self, lines: list[str]) -> None:
+        """Sets the content of the log file body.
+
+        Args:
+            lines: List of log lines.
+        """
+
         self._lines: list[str] = [_process_log_line(line) for line in lines]
         self._max_cell_len: int = self._compute_max_cell_len(self._lines)
         self._apply_virtual_size()
@@ -216,6 +251,12 @@ class VirtualLogLines(ScrollView, can_focus=True):
         self.refresh()
 
     def set_placeholder(self, message: str) -> None:
+        """Sets the placeholder text for the log file body.
+
+        Args:
+            message: The placeholder text.
+        """
+
         self._lines: list[str] = [_process_log_line(message)]
         self._max_cell_len: int = self._compute_max_cell_len(self._lines)
         self._apply_virtual_size()
@@ -229,10 +270,21 @@ class VirtualLogLines(ScrollView, can_focus=True):
         self.virtual_size = Size(vw, vh)
 
     def on_resize(self, event: events.Resize) -> None:
+        """Handles resize events."""
+
         if self._lines:
             self._apply_virtual_size()
 
     def render_line(self, y: int) -> Strip:
+        """Renders a line of the log file body.
+
+        Args:
+            y: The index of the line to render.
+
+        Returns:
+            A Strip object with the rendered line.
+        """
+
         scroll_x, scroll_y = self.scroll_offset
         row: int = scroll_y + y
         width: int = self.size.width
@@ -248,7 +300,21 @@ class VirtualLogLines(ScrollView, can_focus=True):
 
 
 class LogList(Widget):
+    """Log file list: list of log files with their full paths.
+
+    Attributes:
+        identificator: The identificator of the cronjob.
+        log_paths: The dictionary of log files with their full paths.
+        logs: The list of log files.
+    """
+
     class LogSelected(Message):
+        """Message posted when a log file is selected.
+
+        Attributes:
+            log_path: The full path of the selected log file.
+        """
+
         def __init__(self, log_path: str) -> None:
             self.log_path: str = log_path
             super().__init__()
@@ -264,6 +330,14 @@ class LogList(Widget):
 
 
 class LogView(Widget):
+    """Log viewer: list of log files with their full paths, and a log file body.
+
+    Attributes:
+        ssh_client: Paramiko SSH client for remote operations.
+        log_list: Log file list.
+        log_output: The log file body.
+    """
+
     BINDINGS = [
         Binding("l", "cursor_right", "Right"),
         Binding("h", "cursor_left", "Left"),
@@ -283,6 +357,15 @@ class LogView(Widget):
         return self.log_list.query_one(VirtualLogFileList)
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        """Checks if the action is allowed.
+
+        Args:
+            action: The action to check.
+
+        Returns:
+            True if the action is allowed, else False.
+        """
+
         is_empty: bool = not self.log_list.logs
         if action in (
             "cursor_up",
@@ -294,12 +377,18 @@ class LogView(Widget):
         return True
 
     def action_cursor_left(self) -> None:
+        """Selects the log file list."""
+
         self.app.set_focus(self._file_list())
 
     def action_cursor_right(self) -> None:
+        """Selects the log file body."""
+
         self.app.set_focus(self.log_output)
 
     def action_cursor_down(self) -> None:
+        """Scrolls down the log file body."""
+
         if self.log_output.has_focus:
             self.log_output.action_scroll_down()
             return
@@ -307,6 +396,8 @@ class LogView(Widget):
             self._file_list().action_cursor_down()
 
     def action_cursor_up(self) -> None:
+        """Scrolls up the log file body."""
+
         if self.log_output.has_focus:
             self.log_output.action_scroll_up()
             return
@@ -314,6 +405,8 @@ class LogView(Widget):
             self._file_list().action_cursor_up()
 
     def compose(self) -> ComposeResult:
+        """Builds the modal UI: log file list and log file body."""
+
         with Vertical(id="content"):
             yield Horizontal(
                 self.log_list,
@@ -329,12 +422,20 @@ class LogView(Widget):
         self.log_list.styles.width = "30%"
 
     def on_mount(self) -> None:
+        """Mounts the widget."""
+
         self.app.toggle_tab_enablement()  # Disable tab switching using the `Tab` key
         self.log_output.set_placeholder(
             "Please select a log from the list on the left."
         )
 
     def on_key(self, event: events.Key) -> None:
+        """Handles key presses.
+
+        Args:
+            event: events.Key object. Identifies the key pressed.
+        """
+
         if event.key == "tab":
             if isinstance(self.app.focused, VirtualLogFileList):
                 self.app.set_focus(self.log_output)
@@ -345,6 +446,12 @@ class LogView(Widget):
 
     @on(LogList.LogSelected)
     def show_log(self, event: LogList.LogSelected):
+        """Shows the log file body.
+
+        Args:
+            event: LogList.LogSelected object. Identifies the selected log file.
+        """
+
         lines: list[str] = read_log_file(event.log_path, self.ssh_client)
         if len(lines) == 0:
             self.log_output.set_content(["No logs found"])
@@ -353,17 +460,28 @@ class LogView(Widget):
 
 
 class LogViewModal(ModalScreen[bool]):
+    """Modal screen for viewing a log file.
+
+    Attributes:
+        identificator: The identificator of the cronjob.
+        ssh_client: Paramiko SSH client for remote operations.
+    """
+
     def __init__(self, identificator: str, ssh_client=None):
         super().__init__()
         self.identificator: str = identificator
         self.ssh_client: SSHClient | None = ssh_client
 
     def compose(self) -> ComposeResult:
+        """Builds the modal UI: log viewer."""
+
         yield Grid(
             LogView(identificator=self.identificator, ssh_client=self.ssh_client),
             id="dialog",
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handles button presses."""
+
         self.app.toggle_tab_enablement()  # Enable tab switching using the `Tab` key
         self.dismiss(True)
