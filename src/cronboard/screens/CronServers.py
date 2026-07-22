@@ -209,9 +209,8 @@ class CronServers(Widget):
     def load_servers(self) -> dict:
         """Loads the server information from the config file.
 
-        Returns: The server information as a dictionary, if the config file exists. It
-        not, returns an empty dictionary.
-
+        Returns:
+            The server information as a dictionary, if the config file exists. It not, returns an empty dictionary.
         """
 
         if CONFIG_FILE.exists():

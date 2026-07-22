@@ -33,7 +33,8 @@ class CronCreator(ModalScreen[bool]):
     Provides a form with fields for cron expression, command, job ID,
     and logging preference. Supports both local and remote (SSH) crontabs.
 
-    Returns True on successful save, False on cancel.
+    Returns:
+        True on successful save, False on cancel.
 
     Args:
         cron: CronTab instance to read/write jobs.
@@ -323,7 +324,8 @@ class CronCreator(ModalScreen[bool]):
             identificator: String which identifies the cronjob.
             cmd: String representation of the command the cronjob executes.
 
-        Returns: The cronjob if it was found or None if don't.
+        Returns:
+            The cronjob if it was found or None if don't.
 
         """
         for job in self.cron:
