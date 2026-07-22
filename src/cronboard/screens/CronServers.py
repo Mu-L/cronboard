@@ -1,3 +1,4 @@
+from paramiko.client import SSHClient
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Grid
 from textual.widget import Widget
@@ -15,6 +16,15 @@ from cronboard.config import CONFIG_FILE
 
 
 class CronServers(Widget):
+    """Widget showing a list of the servers added by the user.
+
+    Attributes:
+        servers: Dict with the all the servers.
+        current_ssh_client: Paramiko SSH client for remote operations.
+        current_cron_table: CronTable with the cronjobs for the selected server.
+        current_server_name: Selected server name.
+    """
+
     BINDINGS = [
         Binding("a", "add_server", "Add Server"),
         Binding("D", "delete_server", "Delete Server"),
@@ -31,6 +41,8 @@ class CronServers(Widget):
         self.current_server_name = None
 
     def compose(self) -> ComposeResult:
+        """Builds the modal UI: CronTree with the servers and a Label."""
+
         servers_tree = CronTree("Servers", id="servers-tree")
         servers_tree.root.expand()
         self.content_area = Label(
@@ -45,6 +57,8 @@ class CronServers(Widget):
         )
 
     def on_mount(self) -> None:
+        """Creates the server tree on mount"""
+
         servers_tree: Tree = self.query_one("#servers-tree", Tree)
         for server_id, server_info in self.servers.items():
             servers_tree.root.add_leaf(
@@ -54,6 +68,8 @@ class CronServers(Widget):
         servers_tree.refresh()
 
     def action_connect_server(self) -> None:
+        """Connect to the server under the cursor"""
+
         servers_tree: Tree = self.query_one("#servers-tree", Tree)
         if servers_tree.cursor_node and servers_tree.cursor_node != servers_tree.root:
             server_id = servers_tree.cursor_node.data
@@ -61,7 +77,17 @@ class CronServers(Widget):
             if server_info:
                 self.connect_to_server(server_info)
 
-    def connect_to_server(self, server_info) -> None:
+    def connect_to_server(self, server_info: dict) -> None:
+        """Tries to connect to the chosen server, using `ssh key` if available, or
+        `password` if not. If the user is connected to another server, it will then
+        disconnect from it as well before connecting to the one under the cursor.
+
+        After the connection, a CronTable with the cronjobs will be shown.
+
+        Args:
+            server_info: Information about the server to connect to.
+        """
+
         try:
             ssh_client = paramiko.SSHClient()
             ssh_client.load_system_host_keys()
@@ -100,7 +126,17 @@ class CronServers(Widget):
         except Exception as e:
             self.notify(f"Connection error: {e}")
 
-    def show_cron_table_for_server(self, ssh_client, server_info, crontab_user) -> None:
+    def show_cron_table_for_server(
+        self, ssh_client: SSHClient, server_info: dict, crontab_user
+    ) -> None:
+        """Shows the CronTable for the connected server.
+
+        Args:
+            ssh_client: Paramiko SSHClient for remote operations.
+            server_info: A dictionary with the information about the server.
+            crontab_user: The current CronTab.
+        """
+
         if self.current_cron_table:
             self.current_cron_table.ssh_client = ssh_client
             self.current_cron_table.remote = True
@@ -126,6 +162,8 @@ class CronServers(Widget):
         self.content_area = self.current_cron_table
 
     def show_disconnected_message(self) -> None:
+        """Shows a message when disconnecting from a server."""
+
         if self.current_cron_table:
             self.current_cron_table.remove()
             self.current_cron_table = None
@@ -144,6 +182,9 @@ class CronServers(Widget):
         self.content_area = disconnected_label
 
     def action_disconnect_server(self) -> None:
+        """Disconnect from the server under the cursor, shows a notification and updates
+        the server information."""
+
         if self.current_ssh_client:
             try:
                 self.current_ssh_client.close()
@@ -166,6 +207,13 @@ class CronServers(Widget):
         self.save_servers()
 
     def load_servers(self) -> dict:
+        """Loads the server information from the config file.
+
+        Returns: The server information as a dictionary, if the config file exists. It
+        not, returns an empty dictionary.
+
+        """
+
         if CONFIG_FILE.exists():
             try:
                 with CONFIG_FILE.open("rb") as f:
@@ -200,6 +248,8 @@ class CronServers(Widget):
         return {}
 
     def save_servers(self) -> None:
+        """Saves the server information to the config file."""
+
         try:
             CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
             toml_safe_servers = {}
@@ -227,7 +277,14 @@ class CronServers(Widget):
             self.notify(f"❌ Error: Failed to save servers: {e}")
 
     def action_add_server(self) -> None:
+        """Adds a new server to the tree view."""
+
         def on_server_added(result):
+            """Callback for the server addition.
+
+            Args:
+                result: The result of the server addition.
+            """
             if result:
                 name = result.get("username") + "@" + result.get("hostname")
                 host = result.get("hostname")
@@ -251,6 +308,18 @@ class CronServers(Widget):
         password: str | None,
         crontab_user: str | None = None,
     ) -> None:
+        """Adds a server to the tree view.
+
+        Args:
+            name: The name of the server.
+            host: The host of the server.
+            port: The port of the server.
+            username: The username of the user connecting to the server.
+            password: The password of the user connecting to the server. Empty is using
+            SSH key.
+            crontab_user: The CronTab user for the server.
+        """
+
         servers_tree = self.query_one("#servers-tree", Tree)
         server_id = f"{username}@{host}:{crontab_user}"
         if server_id not in self.servers:
@@ -271,6 +340,8 @@ class CronServers(Widget):
             self.save_servers()
 
     def action_delete_server(self) -> None:
+        """Deletes the selected server from the tree view."""
+
         servers_tree = self.query_one("#servers-tree", Tree)
         if not (
             servers_tree.cursor_node and servers_tree.cursor_node != servers_tree.root
@@ -314,6 +385,7 @@ class CronServers(Widget):
             tree.focus()
 
     def action_jump(self) -> None:
+        """Jumps to the CronTable for the selected server."""
         servers_tree = self.query_one("#servers-tree", Tree)
         if servers_tree.has_focus and self.current_cron_table:
             self.current_cron_table.focus()
