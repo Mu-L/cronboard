@@ -28,6 +28,8 @@ class CronSSHModal(ModalScreen):
         return host_info, 22
 
     def compose(self) -> ComposeResult:
+        """Builds the modal UI: hostname, username, password, crontab user."""
+
         yield Grid(
             Vertical(
                 Label(
@@ -70,6 +72,8 @@ class CronSSHModal(ModalScreen):
         )
 
     def on_input_changed(self, event: Input.Changed) -> None:
+        """Updates the error label when the input is changed"""
+
         if self.query("#error"):
             label_error: Widget = self.query_one("#error")
             label_error.remove()
@@ -79,6 +83,13 @@ class CronSSHModal(ModalScreen):
             label.remove()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Determines the action on button pressed. It saves the cronjob on `add`. Shows
+        errors if any.
+
+        Args:
+            event: Button.Pressed object. Identifies the button throught id.
+        """
+
         if event.button.id == "cancel":
             self.dismiss(False)
             return
