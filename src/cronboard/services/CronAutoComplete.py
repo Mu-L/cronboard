@@ -18,6 +18,14 @@ from cronboard.services.CronDirEntry import CronDirEntry
 
 
 class CronAutoComplete(PathAutoComplete):
+    """Textual widget for autocompleting cronjob commands.
+
+    Attributes:
+        ssh_client: SSH client for remote operations.
+        target_state: Target state of the input.
+        directory_cache: Directory cache for caching directory entries.
+    """
+
     def __init__(self, target, ssh_client=None):
         super().__init__(target)
         self.ssh_client: SSHClient | None = ssh_client
@@ -28,10 +36,16 @@ class CronAutoComplete(PathAutoComplete):
         self._remote_home: str | None = None
 
     def get_candidates(self, target_state: TargetState) -> list[DropdownItem]:
-        """Get the candidates for the current path segment.
+        """Get the candidates for the current path segment. This is called each time the input changes or the cursor position changes.
 
-        This is called each time the input changes or the cursor position changes
+        Args:
+            target_state: Target state of the input.
+
+        Returns:
+            A list of DropdownItem objects with the candidates for the current path segment.
+
         """
+
         if self.ssh_client:
             if not self._remote_home:
                 self._remote_home: str | None = get_remote_home(self.ssh_client)
@@ -119,12 +133,23 @@ class CronAutoComplete(PathAutoComplete):
         return dropdown_items
 
     def on_unmount(self) -> None:
+        """Close the SFTP connection on unmount."""
+
         if self._sftp:
             self._sftp.close()
             self._sftp = None
 
     def get_search_string(self, target_state: TargetState) -> str:
-        """Return only the current path segment for searching in the dropdown."""
+        """Return only the current path segment for searching in the dropdown.
+
+        Args:
+            target_state: The target state of the input.
+
+        Returns:
+            The current path segment.
+
+        """
+
         current_input_full: str = target_state.text[
             : target_state.cursor_position
         ].strip()
@@ -141,7 +166,12 @@ class CronAutoComplete(PathAutoComplete):
             return current_input
 
     def apply_completion(self, value: str, state: TargetState) -> None:
-        """Apply the completion by replacing only the current path segment."""
+        """Apply the completion by replacing only the current path segment.
+
+        Args:
+            value: The value to apply.
+            state: The target state of the input.
+        """
 
         def get_new_path_string(path_input: str, cursor_position: int):
             # There's a slash before the cursor, so we only want to replace
@@ -241,5 +271,7 @@ class CronAutoComplete(PathAutoComplete):
             target.cursor_position = new_cursor_position
 
     def post_completion(self) -> None:
+        """Hide the autocomplete if the input is not a directory."""
+
         if not self.target.value.endswith("/"):
             self.action_hide()
