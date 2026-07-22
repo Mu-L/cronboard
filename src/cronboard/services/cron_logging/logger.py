@@ -8,6 +8,17 @@ import shutil
 
 
 def get_log_files(identificator: str, ssh: paramiko.SSHClient | None = None) -> dict:
+    """
+    Returns a dictionary with the log files for the given identificator.
+
+    Args:
+        identificator: The identificator of the cronjob.
+        ssh: Paramiko SSH client for remote operations.
+
+    Returns:
+        A dictionary with the log files for the given identificator if any, else empty dictionary.
+    """
+
     if ssh is None:
         log_dir: Path = LOG_DIR / identificator
         if not log_dir.exists():
@@ -44,6 +55,17 @@ def get_log_files(identificator: str, ssh: paramiko.SSHClient | None = None) -> 
 
 
 def read_log_file(log_path: str, ssh: paramiko.SSHClient | None = None) -> list:
+    """
+    Reads the log file at the given path.
+
+    Args:
+        log_path: The path to the log file.
+        ssh: Paramiko SSH client for remote operations.
+
+    Returns:
+        A list of lines in the log file if any, else empty list.
+    """
+
     if ssh is None:
         log_file: Path = Path(log_path)
         if not log_file.exists():
@@ -69,8 +91,13 @@ def delete_logs_for_identificator(
     identificator: str, ssh: paramiko.SSHClient | None = None
 ) -> None:
     """
-    Deletes all log files associated with the given identificator.
+    Deletes the log files for the given identificator.
+
+    Args:
+        identificator: The identificator of the cronjob.
+        ssh: Paramiko SSH client for remote operations.
     """
+
     if ssh is None:
         path: Path = LOG_DIR / identificator
         shutil.rmtree(path, ignore_errors=True)
