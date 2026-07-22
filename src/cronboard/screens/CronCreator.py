@@ -28,6 +28,23 @@ CRON_ALIASES: dict[str, None | str] = {
 
 
 class CronCreator(ModalScreen[bool]):
+    """Modal screen for creating and editing cron jobs.
+
+    Provides a form with fields for cron expression, command, job ID,
+    and logging preference. Supports both local and remote (SSH) crontabs.
+
+    Returns True on successful save, False on cancel.
+
+    Args:
+        cron: CronTab instance to read/write jobs.
+        expression: Pre-filled cron expression (e.g. "* * * * *").
+        command: Pre-filled command string.
+        identificator: Pre-filled job ID/comment.
+        remote: Whether this is a remote crontab via SSH.
+        ssh_client: Paramiko SSH client for remote operations.
+        crontab_user: CronTab instance for remote user-specific crontabs.
+    """
+
     BINDINGS = [Binding(key="escape", action="close_modal", description="Close")]
     _ERROR_VISIBLE_CLASS = "error-showing"
 
@@ -52,6 +69,10 @@ class CronCreator(ModalScreen[bool]):
         self.crontab_user: CronTab | None = crontab_user
 
     def compose(self) -> ComposeResult:
+        """Builds the modal UI: cron expression help, expression input,
+        command input with autocomplete, job ID input, logging toggle,
+        save/cancel buttons, and error label."""
+
         with Grid(id="dialog"):
             with Vertical(id="content"):
                 yield Label("Special characters:", id="label_special")
@@ -106,6 +127,8 @@ class CronCreator(ModalScreen[bool]):
                 yield Label("", id="error")
 
     async def action_close_modal(self) -> None:
+        """Dismiss the modal on close"""
+
         await self.dismiss(False)
 
     def _show_error(self, message: str) -> None:
@@ -123,6 +146,12 @@ class CronCreator(ModalScreen[bool]):
         return error_label.has_class(self._ERROR_VISIBLE_CLASS)
 
     def on_input_changed(self, event: Input.Changed) -> None:
+        """Updates the error label when the input is changed
+
+        Args:
+            event: Input.Changed object. Identifies the felt with the error throught id.
+        """
+
         self._clear_error()
         if event.input.id == "identificator":
             ident: str = event.value.strip()
@@ -142,12 +171,25 @@ class CronCreator(ModalScreen[bool]):
         self.expression_description(expr, label_desc)
 
     def on_radio_set_changed(self, event: RadioSet.Changed) -> None:
+        """Enable/disable logs using radio buttons
+
+        Args:
+            event: RadioSet.Changed object. Identifies the button throught id.
+        """
+
         if event.pressed.id == "enable":
             self.log_enabled = True
         else:
             self.log_enabled = False
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Determines the action on button pressed. It saves the cronjob on save. Shows
+        errors if any.
+
+        Args:
+            event: Button.Pressed object. Identifies the button throught id.
+        """
+
         if event.button.id != "save":
             self.dismiss(False)
             return
@@ -204,6 +246,18 @@ class CronCreator(ModalScreen[bool]):
             self._show_error("Invalid cron expression. Please try again.")
 
     def expression_description(self, expr: str, label_desc: Label) -> None:
+        """Parses the cron expression to natural language, updating the label for the
+        user.
+
+        Args:
+            expr: String of the cron expression.
+            label_desc: The label with the natural language description of the cron
+            expression.
+
+        Raises:
+            ValueError: If the cron expression is invalid. It updates the label.
+        """
+
         if not expr:
             label_desc.update("")
             label_desc.remove_class("success")
@@ -237,6 +291,7 @@ class CronCreator(ModalScreen[bool]):
 
     def write_cron_changes(self) -> None:
         """Write cron changes to appropriate destination (local or remote)"""
+
         if self.remote and self.ssh_client:
             try:
                 new_crontab_content = self.cron.render()
@@ -262,6 +317,15 @@ class CronCreator(ModalScreen[bool]):
             self.cron.write()
 
     def find_if_cronjob_exists(self, identificator: str, cmd: str):
+        """Search for a cronjob in the list.
+
+        Args:
+            identificator: String which identifies the cronjob.
+            cmd: String representation of the command the cronjob executes.
+
+        Returns: The cronjob if it was found or None if don't.
+
+        """
         for job in self.cron:
             if job.comment == identificator and job.command == cmd:
                 return job
