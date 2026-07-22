@@ -21,6 +21,15 @@ COMMAND_PAYLOAD_PREFIX = "cronboard1:"
 
 
 def get_remote_bash_path(ssh: paramiko.SSHClient) -> str:
+    """Gets the path to the bash executable on the remote server.
+
+    Args:
+        ssh: Paramiko SSH client for remote operations.
+
+    Returns:
+        The path to the bash executable on the remote server if found, else "/bin/bash".
+    """
+
     try:
         _, stdout, _ = ssh.exec_command("command -v bash")
         result: str = stdout.read().decode().strip()
@@ -32,6 +41,15 @@ def get_remote_bash_path(ssh: paramiko.SSHClient) -> str:
 
 
 def get_remote_home(ssh: paramiko.SSHClient) -> Optional[str]:
+    """Gets the home directory on the remote server.
+
+    Args:
+        ssh: Paramiko SSH client for remote operations.
+
+    Returns:
+        The home directory on the remote server if found, else None.
+    """
+
     try:
         _, stdout, stderr = ssh.exec_command("echo ~")
         home: str = stdout.read().decode().strip()
@@ -58,6 +76,16 @@ def get_remote_home(ssh: paramiko.SSHClient) -> Optional[str]:
 def get_files(
     ssh: paramiko.SSHClient, path: str, sftp: SFTPClient | None = None
 ) -> list[CronDirEntry]:
+    """Gets the files and directories in the given path.
+
+    Args:
+        ssh: Paramiko SSH client for remote operations.
+        path: The current path.
+        sftp: SFTP client for local operations on the server.
+
+    Returns:
+        A list of CronDirEntry objects with the files and directories in the given path.
+    """
 
     own_sftp: bool = sftp is None
 
@@ -81,6 +109,12 @@ def get_files(
 
 
 def is_wrapper_installed_local() -> bool:
+    """Checks if the log wrapper is installed locally.
+
+    Returns:
+        True if the log wrapper is installed locally, else False.
+    """
+
     target_file: Path = CONFIG_DIR / WRAPPER_DIST
 
     return (
@@ -91,6 +125,15 @@ def is_wrapper_installed_local() -> bool:
 
 
 def is_wrapper_installed_remote(ssh: paramiko.SSHClient) -> bool:
+    """Checks if the log wrapper is installed on the remote server.
+
+    Args:
+        ssh: Paramiko SSH client for remote operations.
+
+    Returns:
+        True if the log wrapper is installed on the remote server, else False.
+    """
+
     home: str | None = get_remote_home(ssh)
     if not home:
         return False
@@ -112,6 +155,15 @@ def is_wrapper_installed_remote(ssh: paramiko.SSHClient) -> bool:
 
 
 def is_wrapper_installed(ssh: paramiko.SSHClient | None = None) -> bool:
+    """Checks if the log wrapper is installed on the remote server or locally.
+
+    Args:
+        ssh: Paramiko SSH client for remote operations.
+
+    Returns:
+        True if the log wrapper is installed on the remote server or locally, else False.
+    """
+
     if ssh is None:
         return is_wrapper_installed_local()
     else:
@@ -119,6 +171,12 @@ def is_wrapper_installed(ssh: paramiko.SSHClient | None = None) -> bool:
 
 
 def install_wrapper_local():
+    """Installs the log wrapper locally.
+
+    Returns:
+        The path to the log wrapper if installed, else None.
+    """
+
     target_dir: Path = CONFIG_DIR
     target_file: Path = CONFIG_DIR / WRAPPER_DIST
 
@@ -133,6 +191,15 @@ def install_wrapper_local():
 
 
 def install_wrapper_remote(ssh: paramiko.SSHClient) -> str | None:
+    """Installs the log wrapper on the remote server.
+
+    Args:
+        ssh: Paramiko SSH client for remote operations.
+
+    Returns:
+        The path to the log wrapper on the remote server if installed, else None.
+    """
+
     home: str | None = get_remote_home(ssh)
 
     remote_dir = f"{home}/{CONFIG_REL_PATH}"
@@ -154,6 +221,15 @@ def install_wrapper_remote(ssh: paramiko.SSHClient) -> str | None:
 
 
 def install_wrapper(ssh: paramiko.SSHClient | None = None) -> str | None:
+    """Installs the log wrapper on the remote server or locally.
+
+    Args:
+        ssh: Paramiko SSH client for remote operations.
+
+    Returns:
+        The path to the log wrapper on the remote server or locally if installed, else None.
+    """
+
     if ssh is None:
         return install_wrapper_local()
     else:
@@ -178,6 +254,17 @@ def _decode_wrapped_command_payload(token: str) -> str | None:
 def wrap_command(
     command: str, identificator: str, ssh: paramiko.SSHClient | None = None
 ) -> str:
+    """Wraps the cronjob's command with the log wrapper.
+
+    Args:
+        command: The command to wrap.
+        identificator: The identificator of the cronjob.
+        ssh: Paramiko SSH client for remote operations.
+
+    Returns:
+        The wrapped command if the wrapper is installed, else the original command.
+    """
+
     wrapper_path: str | None = install_wrapper(ssh)
     if wrapper_path is None:
         # If this is None, it means failed to install wrapper in ssh server
@@ -208,6 +295,15 @@ def wrap_command(
 
 
 def has_wrapper(command: str) -> bool:
+    """Checks if the command has the log wrapper.
+
+    Args:
+        command: The command to check.
+
+    Returns:
+        True if the command has the log wrapper, else False.
+    """
+
     try:
         parts: list[str] = shlex.split(command)
     except ValueError:
@@ -227,6 +323,15 @@ def has_wrapper(command: str) -> bool:
 
 
 def command_without_wrapper(command: str) -> str:
+    """Removes the log wrapper from the command.
+
+    Args:
+        command: The command to remove the log wrapper from.
+
+    Returns:
+        The command without the log wrapper if it was found, else the original command.
+    """
+
     try:
         parts: list[str] = shlex.split(command)
     except ValueError:
