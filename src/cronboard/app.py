@@ -1,3 +1,4 @@
+from textual.widget import Widget
 from textual.content import Content
 import tomllib
 from importlib.metadata import version, PackageNotFoundError
@@ -33,7 +34,16 @@ from cronboard.screens.CronServers import CronServers
 from cronboard.themes.everforest_dark_hard import everforest_dark_hard
 
 
-def is_form_element(element):
+def is_form_element(element: Widget | None):
+    """Checks if the element is a form element.
+
+    Args:
+        element: The element to check.
+
+    Returns:
+        True if the element is a form element, else False.
+    """
+
     return isinstance(
         element,
         (
@@ -51,7 +61,21 @@ def is_form_element(element):
 
 
 class CronBoard(App):
-    """A Textual App to manage cron jobs."""
+    """A Textual App to manage cron jobs.
+
+    Attributes:
+        BASE_DIR: The base directory of the app.
+        CSS_PATH: The path to the CSS file.
+        config_path: The path to the config file.
+        tabs: The CronTabs widget.
+        content_container: The container for the tab content.
+        theme: The theme to use.
+        servers: The CronServers widget.
+        local_table: The CronTable widget for the local crontab.
+        display: The display state of the CronTable widget.
+        tab_disabled: The disabled state of the tabs.
+        active: The active tab.
+    """
 
     BASE_DIR: Path = Path(__file__).resolve().parent
     CSS_PATH = BASE_DIR / "static" / "css" / "cronboard.tcss"
@@ -62,6 +86,8 @@ class CronBoard(App):
     ]
 
     def compose(self) -> ComposeResult:
+        """Builds the UI: title, footer, tabs, and content container."""
+
         version: str = self.get_version()
         self.config_path: Path = Path.home() / ".config/cronboard/config.toml"
         yield Label(
@@ -84,6 +110,8 @@ class CronBoard(App):
         delete_logs_for_identificator(event.identificator, event.ssh_client)
 
     def on_mount(self) -> None:
+        """Loads the theme and config, and mounts the CronTable widget."""
+
         self.register_theme(everforest_dark_hard)
         config: dict = self.load_config()
         saved_theme: str = config.get("theme", "catppuccin-mocha")
@@ -96,6 +124,12 @@ class CronBoard(App):
         self.tab_disabled = False
 
     def load_config(self) -> dict:
+        """Loads the config file.
+
+        Returns:
+            The config as a dictionary.
+        """
+
         if self.config_path.exists():
             try:
                 with self.config_path.open("rb") as f:
@@ -105,6 +139,12 @@ class CronBoard(App):
         return {}
 
     def watch_theme(self, theme: str) -> None:
+        """Watches the theme and saves it to the config file.
+
+        Args:
+            theme: The theme to watch.
+        """
+
         try:
             self.config_path.parent.mkdir(parents=True, exist_ok=True)
             with self.config_path.open("w") as f:
@@ -113,6 +153,12 @@ class CronBoard(App):
             print(f"Warning: Failed to save theme: {e}")
 
     def on_tabs_tab_activated(self, event: Tabs.TabActivated) -> None:
+        """Shows the content for the activated tab.
+
+        Args:
+            event: Tabs.TabActivated object. Identifies the activated tab.
+        """
+
         tab_label: Content = event.tab.label
         if tab_label == "Local":
             self.show_tab_content(0)
@@ -120,6 +166,12 @@ class CronBoard(App):
             self.show_tab_content(1)
 
     def show_tab_content(self, index: int) -> None:
+        """Shows the content for the tab at the given index.
+
+        Args:
+            index: The index of the tab.
+        """
+
         if index == 0:
             self.local_table.display = True
             if self.servers:
@@ -135,6 +187,12 @@ class CronBoard(App):
         self.tab_disabled: bool = not self.tab_disabled
 
     def on_key(self, event: events.Key) -> None:
+        """Handles key presses.
+
+        Args:
+            event: events.Key object. Identifies the key pressed.
+        """
+
         if event.key != "tab":
             return
 
@@ -149,6 +207,8 @@ class CronBoard(App):
         self.action_next_tab_and_focus()
 
     def action_next_tab_and_focus(self) -> None:
+        """Switches to the next tab and focuses the first form element."""
+
         tabs: CronTabs = self.tabs
         tab_widgets: list[Tab] = list(tabs.query(Tab))
         tab_ids: list[str] = [tab.id for tab in tab_widgets]
@@ -175,7 +235,22 @@ class CronBoard(App):
     def action_create_cronjob(
         self, cron: CronTab, remote=False, ssh_client=None, crontab_user=None
     ) -> None:
+        """Shows the CronCreator modal.
+
+        Args:
+            remote: The remote crontab.
+            ssh_client: Paramiko SSH client for remote operations.
+            crontab_user: The CronTab user for the remote server.
+            cron: The CronTab instance to create.
+        """
+
         def check_save(save: bool | None) -> None:
+            """Callback for the save button.
+
+            Args:
+                save: The save state.
+            """
+
             if save:
                 self.local_table.action_refresh()
                 if (
@@ -195,7 +270,23 @@ class CronBoard(App):
     def action_delete_cronjob(
         self, job, cron=None, remote=False, ssh_client=None, crontab_user=None
     ) -> None:
+        """Shows the CronDeleteConfirmation modal.
+
+        Args:
+            job: The CronJob to delete.
+            cron: The CronTab instance to delete.
+            remote: The remote crontab.
+            ssh_client: Paramiko SSH client for remote operations.
+            crontab_user: The CronTab user for the remote server.
+        """
+
         def check_delete(deleted: bool | None) -> None:
+            """Callback for the delete button.
+
+            Args:
+                deleted: The delete state.
+            """
+
             if deleted:
                 self.local_table.action_refresh()
                 if (
@@ -226,7 +317,25 @@ class CronBoard(App):
         ssh_client=None,
         crontab_user=None,
     ) -> None:
+        """Shows the CronCreator modal to edit a cronjob.
+
+        Args:
+            remote: The remote crontab.
+            ssh_client: Paramiko SSH client for remote operations.
+            crontab_user: The CronTab user for the remote server.
+            cron: The CronTab instance to edit.
+            identificator: The identificator of the cronjob.
+            expression: The cron expression.
+            command: The command to execute.
+        """
+
         def check_save(save: bool | None) -> None:
+            """Callback for the save button.
+
+            Args:
+                save: The save state.
+            """
+
             if save:
                 self.local_table.action_refresh()
                 if (
@@ -250,6 +359,12 @@ class CronBoard(App):
         )
 
     def get_version(self) -> str:
+        """Gets the version of the app.
+
+        Returns:
+            The version of the app. If not found, returns "Unknown".
+        """
+
         try:
             return version("cronboard")
         except PackageNotFoundError:
