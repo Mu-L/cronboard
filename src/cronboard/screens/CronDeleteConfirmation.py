@@ -10,6 +10,24 @@ from textual.screen import ModalScreen
 
 
 class CronDeleteConfirmation(ModalScreen[bool]):
+    """Confirmation modal for deleting a cron job or server.
+
+        Displays a contextual message based on what is being deleted
+        (job or server). On confirmation, removes the
+        job/server from the crontab, writes changes (local or remote), and
+        posts a CronJobDeleted message. Returns True on delete, False on
+    cancel.
+
+        Args:
+            job: Cronjob to delete.
+            cron: CronTab instance to modify. Defaults to user's crontab.
+            remote: Whether this is a remote crontab via SSH.
+            ssh_client: Paramiko SSH client for remote operations.
+            server: Server name.
+            message: Confirmation message.
+            crontab_user: CronTab instance for remote user-specific crontabs.
+    """
+
     BINDINGS = [Binding(key="escape", action="close_modal", description="Close")]
 
     def __init__(
@@ -32,6 +50,8 @@ class CronDeleteConfirmation(ModalScreen[bool]):
         self.crontab_user: CronTab | None = crontab_user
 
     def compose(self) -> ComposeResult:
+        """Builds the modal UI: message to display and two buttons (Delete and Cancel)"""
+
         if self.message:
             display_message: str | None = self.message
         elif self.server:
@@ -61,6 +81,13 @@ class CronDeleteConfirmation(ModalScreen[bool]):
         await self.dismiss(False)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Decides the action depending on the button the user clicks. If "delete", it
+        will delete the chosen object.
+
+        Args:
+            event: Button.Pressed object. Identifies the button throught id.
+        """
+
         if event.button.id != "delete":
             self.dismiss(False)
             return
@@ -90,7 +117,12 @@ class CronDeleteConfirmation(ModalScreen[bool]):
         self.dismiss(True)
 
     def write_remote_crontab(self) -> bool:
-        """Writes the current SSH cron table back to the remote server."""
+        """Writes the current SSH cron table back to the remote server.
+
+        Returns: True if success. Else False.
+
+        """
+
         if not (self.remote and self.ssh_client):
             return False
 
