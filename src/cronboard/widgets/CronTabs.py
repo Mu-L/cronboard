@@ -3,6 +3,8 @@ from textual.widgets import Tabs
 
 
 class CronTabs(Tabs):
+    """Textual Tabs widget with Vim-like keyboard navigation."""
+
     BINDINGS = [
         Binding(
             "l",
