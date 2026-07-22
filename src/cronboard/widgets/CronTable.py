@@ -16,6 +16,15 @@ from cronboard.widgets.LogView import LogViewModal
 
 
 class CronTable(DataTable):
+    """Textual DataTable widget with Vim-like keyboard navigation.
+
+    Attributes:
+        remote: Whether the user is on the remote CronTab.
+        ssh_client: Paramiko SSH client for remote operations.
+        crontab_user: CronTab user for remote operations.
+        cron: The local CronTab.
+    """
+
     BINDINGS = [
         Binding("/", "cron_search", "Search"),
         Binding("escape", "clear_search", "Clear Search"),
@@ -44,6 +53,8 @@ class CronTable(DataTable):
         self._search_query: str = ""
 
     def on_mount(self) -> None:
+        """Mounts the widget."""
+
         self.cron: CronTab = CronTab(user=True)
         self.add_columns(
             "ID",
@@ -76,7 +87,16 @@ class CronTable(DataTable):
         self.load_crontabs()
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
-        """Check if an action may run."""
+        """Checks if an action may run.
+
+        Args:
+            action: The action to check.
+
+        Returns:
+            True if the action is allowed, else False.
+
+        """
+
         is_empty: bool = self.row_count == 0
 
         if action in (
@@ -96,11 +116,23 @@ class CronTable(DataTable):
         return True
 
     def on_key(self, event):
+        """Handles key presses.
+
+        Args:
+            event: Identifies the key pressed.
+        """
+
         is_empty: bool = self.row_count == 0
         if event.key == "space":
             self.notify(f"empty: {is_empty}")
 
     def parse_cron(self, cron) -> None:
+        """Parses the crontab and populates the table.
+
+        Args:
+            cron: The CronTab instance to parse.
+        """
+
         for job in cron:
             expr: str = job.slices.render()
             cmd: str = command_without_wrapper(job.command)
@@ -150,6 +182,8 @@ class CronTable(DataTable):
             )
 
     def load_crontabs(self) -> None:
+        """Loads the crontabs."""
+
         self.clear()
         self._rows_data: list = []
         self._search_matches: list = []
@@ -163,7 +197,8 @@ class CronTable(DataTable):
             self.parse_cron(self.cron)
 
     def action_create_cronjob_keybind(self) -> None:
-        """Handle create cronjob action by calling the main app's method."""
+        """Handles create cronjob action by calling the main app's method."""
+
         used_cron: CronTab | None = (
             self.ssh_cron if self.remote and self.ssh_client else self.cron
         )
@@ -174,7 +209,17 @@ class CronTable(DataTable):
             crontab_user=self.crontab_user,
         )
 
-    def action_edit_cronjob_keybind(self, identificator, expression, command) -> None:
+    def action_edit_cronjob_keybind(
+        self, identificator: str, expression: str, command: str
+    ) -> None:
+        """Handles edit cronjob action by calling the main app's method.
+
+        Args:
+            identificator: The identificator of the cronjob.
+            expression: The cron expression.
+            command: The command to execute.
+        """
+
         used_cron: CronTab | None = (
             self.ssh_cron if self.remote and self.ssh_client else self.cron
         )
@@ -189,6 +234,12 @@ class CronTable(DataTable):
         )
 
     def action_delete_cronjob_keybind(self, job) -> None:
+        """Handles delete cronjob action by calling the main app's method.
+
+        Args:
+            job: The CronJob to delete.
+        """
+
         used_cron: CronTab | None = (
             self.ssh_cron if self.remote and self.ssh_client else self.cron
         )
@@ -201,7 +252,8 @@ class CronTable(DataTable):
         )
 
     def action_refresh(self) -> None:
-        """Refresh the cronjob list."""
+        """Refreshes the cronjob list."""
+
         if self.remote and self.ssh_client:
             crontab_cmd: str = (
                 f"crontab -u {self.crontab_user} -l"
@@ -223,20 +275,35 @@ class CronTable(DataTable):
         self.refresh_bindings()
 
     def action_cron_search(self) -> None:
+        """Handles cron search action by calling the main app's method."""
 
         def check_search(search_query: str | None) -> None:
+            """Callback for the cron search.
+
+            Args:
+                search_query: The search query.
+            """
+
             if search_query is not None:
                 self.apply_search(search_query)
 
         self.app.push_screen(CronInputSearch(), check_search)
 
     def action_clear_search(self) -> None:
+        """Handles clear search action by calling the main app's method."""
+
         self._search_query = ""
         self._search_matches: list = []
         self._search_index = -1
         self._restore_cells()
 
     def apply_search(self, query: str) -> None:
+        """Applies the search query.
+
+        Args:
+            query: The search query.
+        """
+
         self._search_query: str = query.lower() if query else ""
         self._search_matches: list[int] = []
 
@@ -295,18 +362,23 @@ class CronTable(DataTable):
                 self.update_cell_at(Coordinate(i, col_idx), row_data[col_idx])
 
     def action_search_next(self) -> None:
+        """Searches for the next match."""
+
         if not self._search_matches:
             return
         self._search_index: int = (self._search_index + 1) % len(self._search_matches)
         self.move_cursor(row=self._search_matches[self._search_index])
 
     def action_search_prev(self) -> None:
+        """Searches for the previous match."""
+
         if not self._search_matches:
             return
         self._search_index: int = (self._search_index - 1) % len(self._search_matches)
         self.move_cursor(row=self._search_matches[self._search_index])
 
     def action_pause_cronjob(self) -> None:
+        """Pauses the selected cronjob."""
 
         row: list = self.get_row_at(self.cursor_row)
         identificator: str = row[0]
@@ -345,6 +417,8 @@ class CronTable(DataTable):
             self.load_crontabs()
 
     def action_edit_cronjob(self) -> None:
+        """Edits the selected cronjob."""
+
         row: list = self.get_row_at(self.cursor_row)
         identificator = row[0]
         expr = row[1]
@@ -376,7 +450,7 @@ class CronTable(DataTable):
             self.action_edit_cronjob_keybind(identificator, expr, cmd)
 
     def action_delete_cronjob(self) -> None:
-        """Delete the selected cronjob."""
+        """Deletes the selected cronjob."""
 
         row: list = self.get_row_at(self.cursor_row)
         identificator = row[0]
@@ -388,6 +462,16 @@ class CronTable(DataTable):
             self.action_delete_cronjob_keybind(job_to_delete)
 
     def find_if_cronjob_exists(self, identificator: str, cmd: str):
+        """Finds the CronJob in the local or remote CronTab.
+
+        Args:
+            identificator: The identificator of the cronjob.
+            cmd: The command to execute.
+
+        Returns:
+            The CronJob if found, else None.
+        """
+
         cron_to_use: CronTab | None = (
             self.ssh_cron if (self.remote and self.ssh_client) else self.cron
         )
@@ -408,12 +492,18 @@ class CronTable(DataTable):
         return None
 
     def action_disconnect_ssh(self) -> None:
-        """Disconnect SSH connection and return to local cron tab."""
+        """Disconnects the SSH connection and returns to the local crontab."""
+
         if self.remote and self.ssh_client:
             self.app.action_disconnect_ssh()
 
     def write_remote_crontab(self):
-        """Writes the current SSH cron table back to the remote server."""
+        """Writes the current SSH cron table back to the remote server.
+
+        Returns:
+            True if success. Else False.
+        """
+
         if not (self.remote and self.ssh_client and self.ssh_cron):
             return False
 
@@ -448,7 +538,7 @@ class CronTable(DataTable):
             return False
 
     def action_view_logs(self) -> None:
-        """View logs for the selected cronjob."""
+        """Views the logs for the selected cronjob."""
 
         row: list = self.get_row_at(self.cursor_row)
         identificator = row[0]
