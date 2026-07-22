@@ -119,7 +119,8 @@ class CronDeleteConfirmation(ModalScreen[bool]):
     def write_remote_crontab(self) -> bool:
         """Writes the current SSH cron table back to the remote server.
 
-        Returns: True if success. Else False.
+        Returns:
+            True if success. Else False.
 
         """
 
