@@ -98,6 +98,8 @@ docs: improve usage section
 
 2. Open a pull request via GitHub’s web interface.
 
+3. Remember to use the `Pull Request template` available.
+
 Refer to [GitHub’s PR Guide](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) if you need help.
 
 ## AI-Generated Code Policy
